@@ -53,7 +53,7 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="max-w-5xl pt-8 px-10 mx-auto">
+        <div className="max-w-5xl pt-8 px-5 md:px-10 mx-auto">
           <Swap />
           <div className="text-foreground flex mt-52">
             <div>
@@ -65,19 +65,6 @@ export default function Home() {
               <p className="mt-3 text-lg">
                 A mix between an open company &amp; a community
               </p>
-            </div>
-            <div className="hidden relative flex-1 flex justify-center">
-              <img
-                src="/fade.svg"
-                className="scale-[1.5] absolute -translate-x-1/5 -translate-y-1/3 top-0 left-0"
-              />
-              <Image
-                src="/icy-logo.png"
-                width={100}
-                height={100}
-                alt="Logo of ICY"
-                className="relative -top-6 object-contain drop-shadow-2xl"
-              />
             </div>
           </div>
 
@@ -159,7 +146,7 @@ export default function Home() {
         </div>
       </main>
 
-      <footer className="max-w-5xl mx-auto px-10 pt-36">
+      <footer className="max-w-5xl mx-auto px-5 md:px-10 pt-36">
         <div className="pb-10">
           <ul className="flex flex-col gap-y-1">
             {[
@@ -175,9 +162,9 @@ export default function Home() {
             })}
           </ul>
         </div>
-        <div className="opacity-70 text-sm flex justify-between border-t border-gray-200 py-4">
+        <div className="opacity-70 text-sm flex flex-col md:flex-row justify-between border-t border-gray-200 py-4">
           <p>Dwarves, LLC &copy; 2015 - 2022 All rights reserved.</p>
-          <div className="flex gap-2">
+          <div className="flex gap-2 mt-20 md:mt-0">
             <a href="mailto:team@dwarves.foundation">team@dwarves.foundation</a>
             <a href="https://t.me/dwarvesf">@dwarvesf</a>
           </div>

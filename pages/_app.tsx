@@ -6,11 +6,13 @@ import "../styles/globals.css";
 import type { AppProps } from "next/app";
 import { WagmiConfig, createClient, chain } from "wagmi";
 import { ConnectKitProvider, getDefaultClient } from "connectkit";
+import BigNumber from "bignumber.js";
+BigNumber.config({ EXPONENTIAL_AT: 1e9 });
 
 const client = createClient(
   getDefaultClient({
     appName: "ICY SWAP",
-    chains: [chain.polygon],
+    chains: [chain.mainnet, chain.polygon],
   })
 );
 
