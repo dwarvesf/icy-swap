@@ -1,7 +1,7 @@
 import Image from "next/image";
 import React from "react";
 
-const scale = 50;
+const scale = 60;
 
 export const AddTokenToMetaMask = (props: {
   address: string;
@@ -26,15 +26,15 @@ export const AddTokenToMetaMask = (props: {
     <button
       onClick={requestWatch}
       type="button"
-      className="text-sm flex items-center space-x-2 text-foreground underline"
+      className="font-light text-xs flex items-center space-x-2 text-white underline"
     >
-      <p>Add {props.symbol} to your wallet</p>
       <Image
         src="/metamask.svg"
         width={1280 / scale}
         height={827 / scale}
         alt=""
       />
+      <p>Track {props.symbol} in MetaMask</p>
     </button>
   );
 };

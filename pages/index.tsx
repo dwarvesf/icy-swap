@@ -1,6 +1,9 @@
+import { ConnectKitButton } from "connectkit";
 import Head from "next/head";
 import Image from "next/image";
+import { AddTokenToMetaMask } from "../components/AddTokenToMetaMask";
 import { Swap } from "../components/Swap";
+import { ICY_CONTRACT_ADDRESS, USDC_CONTRACT_ADDRESS } from "../envs";
 
 export default function Home() {
   return (
@@ -33,99 +36,91 @@ export default function Home() {
       </Head>
 
       <main>
-        <div className="overflow-hidden relative">
-          <img
-            className="h-[800px] w-full object-center object-center"
-            src="/bg.svg"
-            alt=""
-          />
-          <div className="absolute w-full h-full top-0 left-0 flex flex-col justify-center items-center">
-            <Image
-              src="/icy-logo.png"
-              width={150}
-              height={150}
-              alt="Logo of ICY"
-              className="drop-shadow-2xl"
-            />
-            <p className="relative text-5xl text-[#9cc2d5] title drop-shadow-2xl">
-              ICY
-            </p>
+        <div className="bg-foreground overflow-hidden relative">
+          <div className="mx-auto max-w-5xl w-full px-20 py-5 flex justify-center md:justify-end">
+            <ConnectKitButton />
           </div>
-        </div>
-
-        <div className="max-w-5xl pt-8 px-5 md:px-10 mx-auto">
-          <Swap />
-          <div className="text-foreground flex mt-52">
-            <div>
-              <p className="text-left text-5xl font-semibold">
+          <div className="max-w-5xl mx-auto flex flex-col-reverse gap-y-20 md:gap-y-0 p-5 md:flex-row w-full justify-between md:p-20 md:pt-0 md:pb-10">
+            <div className="flex-1 flex flex-col">
+              <Image width={64} height={64} src="/ICY.png" alt="" />
+              <p className="mt-5 text-white text-left text-5xl font-semibold">
                 The token of
                 <br />
                 <span className="text-brand">Dwarves Network</span>
               </p>
-              <p className="mt-3 text-lg">
+              <p className="text-white mt-1 text-lg">
                 A mix between an open company &amp; a community
               </p>
+              <div className="mt-10 text-white flex flex-col space-y-2">
+                {[
+                  {
+                    color: "bg-icy-100",
+                    emoji: "🧠",
+                    text: (
+                      <>
+                        Contribute to{" "}
+                        <a
+                          className="underline text-blue-500"
+                          href="https://brain.d.foundation/"
+                        >
+                          brainery
+                        </a>{" "}
+                        i.e. merge a note
+                      </>
+                    ),
+                  },
+                  {
+                    color: "bg-icy-300",
+                    emoji: "🎙",
+                    text: "Giving a talk or participate in events",
+                  },
+                  {
+                    color: "bg-icy-500",
+                    emoji: "💬",
+                    text: "Sharing & discuss",
+                  },
+                  {
+                    color: "bg-icy-200",
+                    emoji: "🤝",
+                    text: "Invite friends",
+                  },
+                  {
+                    color: "bg-icy-400",
+                    emoji: "📣",
+                    text: "Be an ambassador & share about Dwarves",
+                  },
+                  {
+                    color: "bg-icy-100",
+                    emoji: "📜",
+                    text: "Season quests",
+                  },
+                ].map((i, idx) => {
+                  return (
+                    <p key={`earn-${idx}`} className="text-base">
+                      <span>{i.emoji}</span> {i.text}
+                    </p>
+                  );
+                })}
+              </div>
+              <div className="mt-20 flex flex-col items-start">
+                <AddTokenToMetaMask
+                  address={ICY_CONTRACT_ADDRESS}
+                  decimals={18}
+                  symbol="ICY"
+                />
+                <AddTokenToMetaMask
+                  address={USDC_CONTRACT_ADDRESS}
+                  decimals={6}
+                  symbol="USDC"
+                />
+              </div>
+            </div>
+            <div className="flex-shrink-0">
+              <Swap />
             </div>
           </div>
-
-          <div className="text-foreground mt-36 grid grid-cols-2 grid-rows-3 md:grid-cols-3 md:grid-rows-2 gap-y-10">
-            {[
-              {
-                color: "bg-icy-100",
-                emoji: "🧠",
-                text: (
-                  <>
-                    Contribute to{" "}
-                    <a
-                      className="underline text-blue-500"
-                      href="https://brain.d.foundation/"
-                    >
-                      brainery
-                    </a>{" "}
-                    i.e. merge a note
-                  </>
-                ),
-              },
-              {
-                color: "bg-icy-300",
-                emoji: "🎙",
-                text: "Giving a talk or participate in events",
-              },
-              {
-                color: "bg-icy-500",
-                emoji: "💬",
-                text: "Sharing & discuss",
-              },
-              {
-                color: "bg-icy-200",
-                emoji: "🤝",
-                text: "Invite friends",
-              },
-              {
-                color: "bg-icy-400",
-                emoji: "📣",
-                text: "Be an ambassador & share about Dwarves",
-              },
-              {
-                color: "bg-icy-100",
-                emoji: "📜",
-                text: "Season quests",
-              },
-            ].map((i, idx) => {
-              return (
-                <div className="flex flex-col items-center" key={`earn-${idx}`}>
-                  <p className={`text-5xl rounded-full p-5 mb-4 ${i.color}`}>
-                    {i.emoji}
-                  </p>
-                  <p className="px-4 text-xl text-center font-medium">
-                    {i.text}
-                  </p>
-                </div>
-              );
-            })}
-          </div>
         </div>
-        <div className="overflow-hidden w-full flex justify-center mt-48 bg-gray-100 px-10 py-32 relative">
+        <div className="overflow-hidden w-full flex justify-center bg-gray-100 px-10 py-32 relative">
           <img
             src="/chaos.svg"
             className="h-[700px] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-70"

@@ -1,4 +1,3 @@
-import { ArrowsUpDownIcon } from "@heroicons/react/20/solid";
 import React, { useEffect, useState } from "react";
 import cln from "classnames";
 import { useAccount, useBalance } from "wagmi";
@@ -24,7 +23,7 @@ const Input = (props: {
   });
 
   return (
-    <div className="shadow-md flex flex-col bg-gray-100 rounded md:px-5 md:py-4 px-3 py-2">
+    <div className="relative z-10 shadow-md flex flex-col bg-gray-100 rounded md:px-5 md:py-4 px-3 py-2">
       <div className="flex justify-between">
         <p className="text-xs font-medium text-gray-500">{props.label}</p>
         <button
@@ -63,11 +62,12 @@ const Input = (props: {
 export const Converter = ({
   onChange,
   fromIcy,
-  setFromIcy,
+  children,
 }: {
   onChange: (value: BigNumber) => void;
   fromIcy: boolean;
   setFromIcy: () => void;
+  children: React.ReactNode;
 }) => {
   const [icy, setIcy] = useState("");
   const [usdc, setUsdc] = useState("");
@@ -84,7 +84,7 @@ export const Converter = ({
 
   return (
     <div
-      className={cln("flex gap-y-3 max-w-[280px]", {
+      className={cln("flex max-w-[280px]", {
         "flex-col": fromIcy,
         "flex-col-reverse": !fromIcy,
       })}
@@ -102,14 +102,7 @@ export const Converter = ({
           address: contractAddress,
         }}
       />
-      <button
-        type="button"
-        onClick={setFromIcy}
-        className="mx-auto rounded p-1 text-gray-700 hover:bg-gray-100"
-      >
-        {/* <ArrowDownIcon width={20} height={20} /> */}
-        <ArrowsUpDownIcon width={20} height={20} />
-      </button>
+      {children}
       <Input
         value={usdc}
         onChange={(v) => {

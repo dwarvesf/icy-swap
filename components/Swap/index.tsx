@@ -1,4 +1,3 @@
-import { ConnectKitButton } from "connectkit";
 import {
   useSwitchNetwork,
   useNetwork,
@@ -23,7 +22,6 @@ import {
 import { abi as swapperABI } from "../../contract/swapper";
 import { useApproveToken } from "../../hooks/useApproveToken";
 import { Spinner } from "../Spinner";
-import { AddTokenToMetaMask } from "../AddTokenToMetaMask";
 
 export const Swap = () => {
   const { chain } = useNetwork();
@@ -87,6 +85,8 @@ export const Swap = () => {
     _approve?.();
   };
 
+  const incorrectChain = chain?.unsupported || chain?.id !== 137;
+
   useEffect(() => {
     if (swapResult && chain) {
       setTx(
@@ -95,53 +95,90 @@ export const Swap = () => {
     }
   }, [swapResult, chain]);
 
-  if (chain?.unsupported) {
-    return (
-      <div className="mt-16 flex flex-col items-center justify-center">
-        <ConnectKitButton />
-        <p className="mt-3 text-xl font-medium w-96 text-center">
-          You need to connect to the{" "}
-          <button
-            type="button"
-            onClick={() => switchNetwork?.(defaultChain.polygon.id)}
-            className="text-[#8247e5] underline"
-          >
-            Polygon
-          </button>{" "}
-          network to swap $ICY
-        </p>
-      </div>
-    );
-  }
-
   return (
-    <div className="mt-16 flex flex-col items-center justify-center">
-      <ConnectKitButton />
+    <div className="flex flex-col items-center justify-center">
       {(isConnected || isSSR()) && (
         <>
-          <div className="flex flex-col items-center gap-2 mt-3">
-            <AddTokenToMetaMask
-              address={ICY_CONTRACT_ADDRESS}
-              decimals={18}
-              symbol="ICY"
-            />
-            <AddTokenToMetaMask
-              address={USDC_CONTRACT_ADDRESS}
-              decimals={6}
-              symbol="USDC"
-            />
-          </div>
-          <div className="mt-10">
+          <div>
             <Converter
               fromIcy={fromIcy}
               setFromIcy={toggleFromIcy}
               onChange={setValue}
-            />
+            >
+              <div className="pl-3">
+                <Stepper.Container
+                  middle
+                  current={
+                    !isConnected || (isConnected && incorrectChain)
+                      ? 1
+                      : value.isZero() || value.isNegative() || notEnoughBal
+                      ? 2
+                      : !tx
+                      ? 3
+                      : 4
+                  }
+                  loading={
+                    confirmingSwap || swapping || confirmingApprove || approving
+                  }
+                >
+                  <Stepper.Step
+                    num={1}
+                    title={
+                      isConnected && incorrectChain ? "Wrong chain" : "Connect"
+                    }
+                  >
+                    {isConnected && incorrectChain ? (
+                      <p>
+                        You need to connect to the{" "}
+                        <button
+                          type="button"
+                          onClick={() =>
+                            switchNetwork?.(defaultChain.polygon.id)
+                          }
+                          className="text-[#8247e5] underline"
+                        >
+                          Polygon
+                        </button>{" "}
+                        network to swap $ICY
+                      </p>
+                    ) : (
+                      "Connect your wallet to Polygon network"
+                    )}
+                  </Stepper.Step>
+                  <Stepper.Step num={2} title="Amount">
+                    {notEnoughBal
+                      ? "You don't have enough balance!"
+                      : "Specify how much you want to receive"}
+                  </Stepper.Step>
+                  <Stepper.Step
+                    num={3}
+                    title={!isApproved ? "Approve" : "Swap"}
+                  >
+                    {!isApproved
+                      ? "Approve the swapping amount"
+                      : "Perform the swap"}
+                  </Stepper.Step>
+                  <Stepper.Step num={4} title="Done">
+                    Check your balance,{" "}
+                    <a
+                      className={cln({
+                        "underline text-blue-300": tx,
+                      })}
+                      href={!tx ? "#" : tx}
+                      rel="noreferrer"
+                      target="_blank"
+                    >
+                      tx receipt
+                    </a>
+                  </Stepper.Step>
+                </Stepper.Container>
+              </div>
+            </Converter>
           </div>
           <button
             type="button"
             className={cln("mt-4 text-white px-5 py-2.5 rounded-sm", {
-              "bg-gray-200":
+              "bg-gray-400":
                 value.isZero() || value.isNegative() || notEnoughBal,
               "bg-brand": !value.isZero() && !value.isNegative(),
             })}
@@ -164,50 +201,6 @@ export const Swap = () => {
               Error: contract out of money
             </p>
           ) : null}
-
-          <div className="mt-12 flex w-72">
-            <Stepper.Container
-              current={
-                !isConnected
-                  ? 1
-                  : value.isZero() || value.isNegative() || notEnoughBal
-                  ? 2
-                  : !tx
-                  ? 3
-                  : 4
-              }
-              loading={
-                confirmingSwap || swapping || confirmingApprove || approving
-              }
-            >
-              <Stepper.Step num={1} title="Step 1">
-                Connect your wallet to Polygon network
-              </Stepper.Step>
-              <Stepper.Step num={2} title="Step 2">
-                {notEnoughBal
-                  ? "You don't have enough balance!"
-                  : "Specify how much you want to receive"}
-              </Stepper.Step>
-              <Stepper.Step num={3} title="Step 3">
-                {!isApproved
-                  ? "Approve the swapping amount"
-                  : "Perform the swap"}
-              </Stepper.Step>
-              <Stepper.Step num={4} title="Step 4">
-                Check your balance,{" "}
-                <a
-                  className={cln({
-                    "underline text-blue-300": tx,
-                  })}
-                  href={!tx ? "#" : tx}
-                  rel="noreferrer"
-                  target="_blank"
-                >
-                  tx receipt
-                </a>
-              </Stepper.Step>
-            </Stepper.Container>
-          </div>
         </>
       )}
     </div>
