@@ -4,9 +4,7 @@ import { useAccount, useBalance } from "wagmi";
 import Image from "next/image";
 import { address as contractAddress } from "../contract/icy";
 import { BigNumber } from "bignumber.js";
-import { USDC_CONTRACT_ADDRESS } from "../envs";
-
-const RATE = 1.5;
+import { RATE, USDC_CONTRACT_ADDRESS } from "../envs";
 
 const Input = (props: {
   label: string;
@@ -61,41 +59,31 @@ const Input = (props: {
 
 export const Converter = ({
   onChange,
-  fromIcy,
   children,
 }: {
   onChange: (value: BigNumber) => void;
-  fromIcy: boolean;
-  setFromIcy: () => void;
   children: React.ReactNode;
 }) => {
   const [icy, setIcy] = useState("");
   const [usdc, setUsdc] = useState("");
 
   useEffect(() => {
-    if (icy && fromIcy) {
+    if (icy) {
       onChange(new BigNumber(icy).times(10 ** 18));
-    } else if (usdc && !fromIcy) {
-      onChange(new BigNumber(usdc).times(10 ** 6));
     } else {
       onChange(new BigNumber(0));
     }
-  }, [icy, usdc, onChange, fromIcy]);
+  }, [icy, onChange]);
 
   return (
-    <div
-      className={cln("flex max-w-[280px]", {
-        "flex-col": fromIcy,
-        "flex-col-reverse": !fromIcy,
-      })}
-    >
+    <div className={cln("flex-col flex max-w-[280px]")}>
       <Input
         value={icy}
         onChange={(v) => {
           setIcy(v);
           setUsdc(`${Number(v) * RATE}`);
         }}
-        label={fromIcy ? "From" : "To"}
+        label="From"
         token={{
           icon: "/ICY.webp",
           symbol: "ICY",
@@ -109,7 +97,7 @@ export const Converter = ({
           setUsdc(v);
           setIcy(`${Number(v) / RATE}`);
         }}
-        label={fromIcy ? "To" : "From"}
+        label="To"
         token={{
           icon: "/USDC.webp",
           symbol: "USDC",

@@ -11,14 +11,10 @@ import {
 import { Stepper } from "../Stepper";
 import { isSSR } from "@dwarvesf/react-utils";
 import { Converter } from "../Converter";
-import { useEffect, useReducer, useState } from "react";
+import { useEffect, useState } from "react";
 import cln from "classnames";
 import { BigNumber } from "bignumber.js";
-import {
-  ICY_CONTRACT_ADDRESS,
-  ICY_SWAPPER_CONTRACT_ADDRESS,
-  USDC_CONTRACT_ADDRESS,
-} from "../../envs";
+import { ICY_CONTRACT_ADDRESS, ICY_SWAPPER_CONTRACT_ADDRESS } from "../../envs";
 import { abi as swapperABI } from "../../contract/swapper";
 import { useApproveToken } from "../../hooks/useApproveToken";
 import { Spinner } from "../Spinner";
@@ -27,11 +23,10 @@ export const Swap = () => {
   const { chain } = useNetwork();
   const { switchNetwork } = useSwitchNetwork();
   const { isConnected } = useAccount();
-  const [fromIcy, toggleFromIcy] = useReducer((fromIcy) => !fromIcy, true);
 
   const { address } = useAccount();
   const { data: balance } = useBalance({
-    token: fromIcy ? ICY_CONTRACT_ADDRESS : USDC_CONTRACT_ADDRESS,
+    token: ICY_CONTRACT_ADDRESS,
     addressOrName: address,
     watch: true,
   });
@@ -42,10 +37,7 @@ export const Swap = () => {
     address: ICY_SWAPPER_CONTRACT_ADDRESS,
     abi: swapperABI,
     functionName: "swap",
-    args: [
-      fromIcy ? ICY_CONTRACT_ADDRESS : USDC_CONTRACT_ADDRESS,
-      value.toString(),
-    ],
+    args: [value.toString()],
   });
 
   const isOutOfMoneyError = error?.message
@@ -65,11 +57,7 @@ export const Swap = () => {
     approving,
     isApproved,
     approve: _approve,
-  } = useApproveToken(
-    value.toString(),
-    fromIcy ? ICY_CONTRACT_ADDRESS : USDC_CONTRACT_ADDRESS,
-    address
-  );
+  } = useApproveToken(value.toString(), ICY_CONTRACT_ADDRESS, address);
 
   const notEnoughBal = !balance || balance.value.lt(value.toString());
 
@@ -100,11 +88,7 @@ export const Swap = () => {
       {(isConnected || isSSR()) && (
         <>
           <div>
-            <Converter
-              fromIcy={fromIcy}
-              setFromIcy={toggleFromIcy}
-              onChange={setValue}
-            >
+            <Converter onChange={setValue}>
               <div className="pl-3">
                 <Stepper.Container
                   middle
@@ -190,9 +174,7 @@ export const Swap = () => {
             ) : !isApproved ? (
               "Approve"
             ) : (
-              `Swap $${fromIcy ? "ICY" : "USDC"} for $${
-                fromIcy ? "USDC" : "ICY"
-              }`
+              `Swap $ICY for $USDC`
             )}
           </button>
 
