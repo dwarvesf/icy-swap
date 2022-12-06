@@ -1,14 +1,13 @@
 import {
-  useNetwork,
   useAccount,
   useBalance,
   usePrepareContractWrite,
   useContractWrite,
-  useWaitForTransaction,
   chain as defaultChain,
+  useWaitForTransaction,
 } from "wagmi";
 import { Converter } from "../Converter";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import cln from "classnames";
 import { BigNumber } from "bignumber.js";
 import { ICY_CONTRACT_ADDRESS, ICY_SWAPPER_CONTRACT_ADDRESS } from "../../envs";
@@ -18,8 +17,6 @@ import { Spinner } from "../Spinner";
 import toast from "react-hot-toast";
 
 export const Swap = () => {
-  const { chain } = useNetwork();
-
   const { address } = useAccount();
   const { data: balance } = useBalance({
     token: ICY_CONTRACT_ADDRESS,
@@ -42,11 +39,11 @@ export const Swap = () => {
 
   const {
     data,
-    write,
+    writeAsync,
     isLoading: confirmingSwap,
   } = useContractWrite(config as any);
 
-  const { data: swapResult, isLoading: swapping } = useWaitForTransaction(data);
+  const { isLoading: swapping } = useWaitForTransaction(data);
 
   const {
     confirmingApprove,
@@ -58,8 +55,18 @@ export const Swap = () => {
   const notEnoughBal = !balance || balance.value.lt(value.toString());
 
   const swap = () => {
-    if (write) {
-      write();
+    if (writeAsync) {
+      writeAsync()
+        .then((data) => data.wait())
+        .then(async (data) => {
+          toast.success("Success", { position: "bottom-center" });
+          fetch(
+            `/api/discord?address=${address}&tx=${`${defaultChain.polygon.blockExplorers?.default.url}/tx/${data.transactionHash}`}&value=${value
+              .div(10 ** 18)
+              .toString()}`
+          );
+        })
+        .catch(() => null);
       toast("Swapping...", {
         position: "bottom-center",
       });
@@ -69,17 +76,6 @@ export const Swap = () => {
   const approve = () => {
     _approve?.();
   };
-
-  useEffect(() => {
-    if (swapResult && chain) {
-      toast.success("Success", { position: "bottom-center" });
-      fetch(
-        `/api/discord?address=${address}&tx=${`${defaultChain.polygon.blockExplorers?.default.url}/tx/${swapResult.transactionHash}`}&value=${value
-          .div(10 ** 18)
-          .toString()}`
-      );
-    }
-  }, [swapResult, chain, address, value]);
 
   return (
     <div className="flex flex-col items-center justify-center">
