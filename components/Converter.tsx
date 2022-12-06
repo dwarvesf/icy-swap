@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import cln from "classnames";
 import { useAccount, useBalance } from "wagmi";
 import Image from "next/image";
@@ -65,15 +65,20 @@ const Input = (props: {
 };
 
 export const Converter = ({
+  setUsdc,
+  icy,
+  usdc,
+  setIcy,
   onChange,
   children,
 }: {
+  icy: string;
+  setIcy: (v: string) => void;
+  usdc: string;
+  setUsdc: (v: string) => void;
   onChange: (value: BigNumber) => void;
   children?: React.ReactNode;
 }) => {
-  const [icy, setIcy] = useState("");
-  const [usdc, setUsdc] = useState("");
-
   const requestWatch = async ({
     address,
     symbol,

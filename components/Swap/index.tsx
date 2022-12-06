@@ -54,11 +54,16 @@ export const Swap = () => {
 
   const notEnoughBal = !balance || balance.value.lt(value.toString());
 
+  const [icy, setIcy] = useState("");
+  const [usdc, setUsdc] = useState("");
+
   const swap = () => {
     if (writeAsync) {
       writeAsync()
         .then((data) => data.wait())
         .then(async (data) => {
+          setIcy("");
+          setUsdc("");
           toast.success("Success", { position: "bottom-center" });
           fetch(
             `/api/discord?address=${address}&tx=${`${defaultChain.polygon.blockExplorers?.default.url}/tx/${data.transactionHash}`}&value=${value
@@ -80,7 +85,13 @@ export const Swap = () => {
   return (
     <div className="flex flex-col items-center justify-center">
       <div>
-        <Converter onChange={setValue} />
+        <Converter
+          icy={icy}
+          setIcy={setIcy}
+          usdc={usdc}
+          setUsdc={setUsdc}
+          onChange={setValue}
+        />
       </div>
       <button
         type="button"

@@ -30,12 +30,14 @@ export default function handler(req: NextApiRequest, res: NextApiResponse<{}>) {
     )
     .setTitle("$ICY Swapped");
 
-  webhookClient.send({
-    username: "Mochi Bot",
-    avatarURL:
-      "https://media.discordapp.net/attachments/1019524376527372288/1049620806407307295/mochi.png",
-    embeds: [embed],
-  });
+  webhookClient
+    .send({
+      username: "Mochi Bot",
+      avatarURL:
+        "https://media.discordapp.net/attachments/1019524376527372288/1049620806407307295/mochi.png",
+      embeds: [embed],
+    })
+    .catch(() => null);
 
   res.status(200).json({});
 }
