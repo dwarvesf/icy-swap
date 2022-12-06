@@ -5,6 +5,7 @@ import { useAccount, useBalance } from "wagmi";
 import Image from "next/image";
 import { address as contractAddress } from "../contract/icy";
 import { BigNumber } from "bignumber.js";
+import { USDC_CONTRACT_ADDRESS } from "../envs";
 
 const RATE = 1.5;
 
@@ -116,7 +117,7 @@ export const Converter = ({
         token={{
           icon: "/USDC.webp",
           symbol: "USDC",
-          address: "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174",
+          address: USDC_CONTRACT_ADDRESS,
         }}
       />
     </div>

@@ -15,10 +15,15 @@ import { Converter } from "../Converter";
 import { useEffect, useState } from "react";
 import cln from "classnames";
 import { BigNumber } from "bignumber.js";
-import { ICY_CONTRACT_ADDRESS, ICY_SWAPPER_CONTRACT_ADDRESS } from "../../envs";
+import {
+  ICY_CONTRACT_ADDRESS,
+  ICY_SWAPPER_CONTRACT_ADDRESS,
+  USDC_CONTRACT_ADDRESS,
+} from "../../envs";
 import { abi as swapperABI } from "../../contract/swapper";
 import { useApproveToken } from "../../hooks/useApproveToken";
 import { Spinner } from "../Spinner";
+import { AddTokenToMetaMask } from "../AddTokenToMetaMask";
 
 export const Swap = () => {
   const { chain } = useNetwork();
@@ -102,6 +107,18 @@ export const Swap = () => {
       <ConnectKitButton />
       {(isConnected || isSSR()) && (
         <>
+          <div className="flex flex-col items-center gap-4 mt-3">
+            <AddTokenToMetaMask
+              address={ICY_CONTRACT_ADDRESS}
+              decimals={18}
+              symbol="ICY"
+            />
+            <AddTokenToMetaMask
+              address={USDC_CONTRACT_ADDRESS}
+              decimals={6}
+              symbol="USDC"
+            />
+          </div>
           <div className="mt-10">
             <Converter onChange={setIcy} />
           </div>
