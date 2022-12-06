@@ -10,6 +10,7 @@ module.exports = {
       colors: {
         foreground: {
           DEFAULT: "#23252C",
+          100: "#1d2232",
         },
         brand: {
           DEFAULT: "#e03e5e",

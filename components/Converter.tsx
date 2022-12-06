@@ -4,7 +4,8 @@ import { useAccount, useBalance } from "wagmi";
 import Image from "next/image";
 import { address as contractAddress } from "../contract/icy";
 import { BigNumber } from "bignumber.js";
-import { RATE, USDC_CONTRACT_ADDRESS } from "../envs";
+import { ICY_CONTRACT_ADDRESS, RATE, USDC_CONTRACT_ADDRESS } from "../envs";
+import { ArrowDownIcon } from "@heroicons/react/20/solid";
 
 const Input = (props: {
   label: string;
@@ -12,6 +13,7 @@ const Input = (props: {
   token: { address: `0x${string}`; icon: string; symbol: string };
   value: string;
   onChange: (v: string) => void;
+  onAddToken: () => void;
 }) => {
   const { address } = useAccount();
   const { data: balance } = useBalance({
@@ -40,9 +42,13 @@ const Input = (props: {
           type="number"
           placeholder="0.00"
           min={0}
-          className="mr-5 min-w-0 focus:shadow-none text-2xl bg-transparent border-none outline-none focus:outline-none form-input p-0"
+          className="text-foreground mr-5 min-w-0 focus:shadow-none text-2xl bg-transparent border-none outline-none focus:outline-none form-input p-0"
         />
-        <div className="flex-shrink-0 flex rounded-full bg-white border border-gray-200 py-1 px-2 space-x-2 items-center">
+        <button
+          type="button"
+          onClick={props.onAddToken}
+          className="w-[92px] flex-shrink-0 flex rounded-full bg-white border border-gray-200 py-1 px-2 space-x-2 items-center"
+        >
           <Image
             className="flex-shrink-0"
             src={props.token.icon}
@@ -51,7 +57,7 @@ const Input = (props: {
             alt=""
           />
           <p className="font-medium text-gray-700">{props.token.symbol}</p>
-        </div>
+        </button>
       </div>
     </div>
   );
@@ -67,6 +73,28 @@ export const Converter = ({
   const [icy, setIcy] = useState("");
   const [usdc, setUsdc] = useState("");
 
+  const requestWatch = async ({
+    address,
+    symbol,
+    decimals,
+  }: {
+    address: `0x${string}`;
+    symbol: string;
+    decimals: number;
+  }) => {
+    await window.ethereum?.request({
+      method: "wallet_watchAsset",
+      params: {
+        type: "ERC20",
+        options: {
+          address,
+          symbol,
+          decimals,
+        },
+      },
+    });
+  };
+
   useEffect(() => {
     if (icy) {
       onChange(new BigNumber(icy).times(10 ** 18));
@@ -76,7 +104,11 @@ export const Converter = ({
   }, [icy, onChange]);
 
   return (
-    <div className={cln("flex-col flex max-w-[280px]")}>
+    <div
+      className={cln("flex-col flex max-w-[280px]", {
+        "space-y-3": !Boolean(children),
+      })}
+    >
       <Input
         value={icy}
         onChange={(v) => {
@@ -85,12 +117,23 @@ export const Converter = ({
         }}
         label="From"
         token={{
-          icon: "/ICY.webp",
+          icon: "/ICY.png",
           symbol: "ICY",
           address: contractAddress,
         }}
+        onAddToken={() =>
+          requestWatch({
+            address: ICY_CONTRACT_ADDRESS,
+            symbol: "ICY",
+            decimals: 18,
+          })
+        }
       />
-      {children}
+      {children ? (
+        children
+      ) : (
+        <ArrowDownIcon width={20} height={20} className="mx-auto text-white" />
+      )}
       <Input
         value={usdc}
         onChange={(v) => {
@@ -103,6 +146,13 @@ export const Converter = ({
           symbol: "USDC",
           address: USDC_CONTRACT_ADDRESS,
         }}
+        onAddToken={() =>
+          requestWatch({
+            address: USDC_CONTRACT_ADDRESS,
+            symbol: "USDC",
+            decimals: 6,
+          })
+        }
       />
     </div>
   );
