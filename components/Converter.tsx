@@ -1,4 +1,4 @@
-import { ArrowDownIcon } from "@heroicons/react/20/solid";
+import { ArrowsUpDownIcon } from "@heroicons/react/20/solid";
 import React, { useEffect, useState } from "react";
 import cln from "classnames";
 import { useAccount, useBalance } from "wagmi";
@@ -62,20 +62,25 @@ const Input = (props: {
 
 export const Converter = ({
   onChange,
+  fromIcy,
+  setFromIcy,
 }: {
-  onChange: (icy: BigNumber) => void;
+  onChange: (value: BigNumber) => void;
+  fromIcy: boolean;
+  setFromIcy: () => void;
 }) => {
-  const [fromIcy, setFromIcy] = useState(true);
   const [icy, setIcy] = useState("");
   const [usdc, setUsdc] = useState("");
 
   useEffect(() => {
-    if (icy) {
+    if (icy && fromIcy) {
       onChange(new BigNumber(icy).times(10 ** 18));
+    } else if (usdc && !fromIcy) {
+      onChange(new BigNumber(usdc).times(10 ** 6));
     } else {
-      onChange(new BigNumber(0).times(10 ** 18));
+      onChange(new BigNumber(0));
     }
-  }, [icy, usdc, onChange]);
+  }, [icy, usdc, onChange, fromIcy]);
 
   return (
     <div
@@ -99,12 +104,11 @@ export const Converter = ({
       />
       <button
         type="button"
-        disabled
-        onClick={() => setFromIcy((f) => !f)}
-        className="mx-auto rounded p-1 text-gray-700"
+        onClick={setFromIcy}
+        className="mx-auto rounded p-1 text-gray-700 hover:bg-gray-100"
       >
-        <ArrowDownIcon width={20} height={20} />
-        {/* <ArrowsUpDownIcon width={20} height={20} /> */}
+        {/* <ArrowDownIcon width={20} height={20} /> */}
+        <ArrowsUpDownIcon width={20} height={20} />
       </button>
       <Input
         value={usdc}
@@ -113,7 +117,6 @@ export const Converter = ({
           setIcy(`${Number(v) / RATE}`);
         }}
         label={fromIcy ? "To" : "From"}
-        disableQuickFill
         token={{
           icon: "/USDC.webp",
           symbol: "USDC",

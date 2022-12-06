@@ -12,7 +12,7 @@ import {
 import { Stepper } from "../Stepper";
 import { isSSR } from "@dwarvesf/react-utils";
 import { Converter } from "../Converter";
-import { useEffect, useState } from "react";
+import { useEffect, useReducer, useState } from "react";
 import cln from "classnames";
 import { BigNumber } from "bignumber.js";
 import {
@@ -29,22 +29,30 @@ export const Swap = () => {
   const { chain } = useNetwork();
   const { switchNetwork } = useSwitchNetwork();
   const { isConnected } = useAccount();
+  const [fromIcy, toggleFromIcy] = useReducer((fromIcy) => !fromIcy, true);
 
   const { address } = useAccount();
   const { data: balance } = useBalance({
-    token: ICY_CONTRACT_ADDRESS,
+    token: fromIcy ? ICY_CONTRACT_ADDRESS : USDC_CONTRACT_ADDRESS,
     addressOrName: address,
     watch: true,
   });
 
-  const [icy, setIcy] = useState(new BigNumber(0));
+  const [value, setValue] = useState(new BigNumber(0));
 
-  const { config } = usePrepareContractWrite({
+  const { config, error } = usePrepareContractWrite({
     address: ICY_SWAPPER_CONTRACT_ADDRESS,
     abi: swapperABI,
     functionName: "swap",
-    args: [ICY_CONTRACT_ADDRESS, icy.toString()],
+    args: [
+      fromIcy ? ICY_CONTRACT_ADDRESS : USDC_CONTRACT_ADDRESS,
+      value.toString(),
+    ],
   });
+
+  const isOutOfMoneyError = error?.message
+    ?.toLowerCase()
+    .includes("out of money");
 
   const {
     data,
@@ -59,9 +67,13 @@ export const Swap = () => {
     approving,
     isApproved,
     approve: _approve,
-  } = useApproveToken(icy.toString(), address);
+  } = useApproveToken(
+    value.toString(),
+    fromIcy ? ICY_CONTRACT_ADDRESS : USDC_CONTRACT_ADDRESS,
+    address
+  );
 
-  const notEnoughBal = !balance || balance.value.lt(icy.toString());
+  const notEnoughBal = !balance || balance.value.lt(value.toString());
 
   const [tx, setTx] = useState("");
 
@@ -107,7 +119,7 @@ export const Swap = () => {
       <ConnectKitButton />
       {(isConnected || isSSR()) && (
         <>
-          <div className="flex flex-col items-center gap-4 mt-3">
+          <div className="flex flex-col items-center gap-2 mt-3">
             <AddTokenToMetaMask
               address={ICY_CONTRACT_ADDRESS}
               decimals={18}
@@ -120,15 +132,20 @@ export const Swap = () => {
             />
           </div>
           <div className="mt-10">
-            <Converter onChange={setIcy} />
+            <Converter
+              fromIcy={fromIcy}
+              setFromIcy={toggleFromIcy}
+              onChange={setValue}
+            />
           </div>
           <button
             type="button"
             className={cln("mt-4 text-white px-5 py-2.5 rounded-sm", {
-              "bg-gray-200": icy.isZero() || icy.isNegative() || notEnoughBal,
-              "bg-brand": !icy.isZero() && !icy.isNegative(),
+              "bg-gray-200":
+                value.isZero() || value.isNegative() || notEnoughBal,
+              "bg-brand": !value.isZero() && !value.isNegative(),
             })}
-            disabled={icy.isZero() || icy.isNegative() || notEnoughBal}
+            disabled={value.isZero() || value.isNegative() || notEnoughBal}
             onClick={!isApproved ? approve : swap}
           >
             {confirmingSwap || confirmingApprove || swapping || approving ? (
@@ -136,16 +153,24 @@ export const Swap = () => {
             ) : !isApproved ? (
               "Approve"
             ) : (
-              "Swap $ICY for $USDC"
+              `Swap $${fromIcy ? "ICY" : "USDC"} for $${
+                fromIcy ? "USDC" : "ICY"
+              }`
             )}
           </button>
+
+          {isOutOfMoneyError ? (
+            <p className="mt-2 text-red-400 font-medium">
+              Error: contract out of money
+            </p>
+          ) : null}
 
           <div className="mt-12 flex w-72">
             <Stepper.Container
               current={
                 !isConnected
                   ? 1
-                  : icy.isZero() || icy.isNegative() || notEnoughBal
+                  : value.isZero() || value.isNegative() || notEnoughBal
                   ? 2
                   : !tx
                   ? 3
@@ -161,7 +186,7 @@ export const Swap = () => {
               <Stepper.Step num={2} title="Step 2">
                 {notEnoughBal
                   ? "You don't have enough balance!"
-                  : "Specify how much $USDC you want to receive"}
+                  : "Specify how much you want to receive"}
               </Stepper.Step>
               <Stepper.Step num={3} title="Step 3">
                 {!isApproved

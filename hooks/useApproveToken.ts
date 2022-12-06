@@ -6,23 +6,24 @@ import {
   usePrepareContractWrite,
   useWaitForTransaction,
 } from "wagmi";
-import { ICY_CONTRACT_ADDRESS, ICY_SWAPPER_CONTRACT_ADDRESS } from "../envs";
+import { ICY_SWAPPER_CONTRACT_ADDRESS } from "../envs";
 
 export function useApproveToken(
   amount: string,
+  token: `0x${string}`,
   owner: `0x${string}` = constants.AddressZero
 ) {
   const { data: allowance } = useContractRead({
     functionName: "allowance",
     args: [owner, ICY_SWAPPER_CONTRACT_ADDRESS],
     abi: erc20ABI,
-    address: ICY_CONTRACT_ADDRESS,
+    address: token,
     isDataEqual: (prev, next) => prev === next,
     watch: true,
   });
 
   const { config } = usePrepareContractWrite({
-    address: ICY_CONTRACT_ADDRESS,
+    address: token,
     abi: erc20ABI,
     functionName: "approve",
     args: [ICY_SWAPPER_CONTRACT_ADDRESS, BigNumber.from(amount)],
