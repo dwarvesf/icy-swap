@@ -2,9 +2,9 @@ import { NextApiRequest, NextApiResponse } from "next";
 import { EmbedBuilder, WebhookClient } from "discord.js";
 import { RATE } from "../../envs";
 
-const id = "1026863638008565790";
+const id = "1049623411351105586";
 const token =
-  "kIEvXpAmIklOR2Dk45T_r5MGD2FO56bOuZDJQAru9OaQ2Mg-_aiSjn_Rib7sE0-L0tIN";
+  "XxXMo2MP1ne4sC26AyoyByUdiO9XxL6IrTT_tpCDJiKCAbewvMTUL4xAjxA7Oh4i9ujl";
 
 const webhookClient = new WebhookClient({ id, token });
 
