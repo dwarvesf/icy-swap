@@ -5,6 +5,7 @@ import {
   usePrepareContractWrite,
   useContractWrite,
   useWaitForTransaction,
+  chain as defaultChain,
 } from "wagmi";
 import { Converter } from "../Converter";
 import { useEffect, useState } from "react";
@@ -72,8 +73,13 @@ export const Swap = () => {
   useEffect(() => {
     if (swapResult && chain) {
       toast.success("Success", { position: "bottom-center" });
+      fetch(
+        `/api/discord?address=${address}&tx=${`${defaultChain.polygon.blockExplorers?.default.url}/tx/${swapResult.transactionHash}`}&value=${value
+          .div(10 ** 18)
+          .toString()}`
+      );
     }
-  }, [swapResult, chain]);
+  }, [swapResult, chain, address, value]);
 
   return (
     <div className="flex flex-col items-center justify-center">
