@@ -38,11 +38,12 @@ const Input = (props: {
       <div className="flex mt-4 justify-between">
         <input
           value={props.value}
-          onChange={(e) => props.onChange(e.target.value)}
-          type="number"
+          onChange={(e) =>
+            !Number.isNaN(Number(e.target.value)) &&
+            props.onChange(e.target.value)
+          }
           placeholder="0.00"
-          min={0}
-          className="text-foreground mr-5 min-w-0 focus:shadow-none text-2xl bg-transparent border-none outline-none focus:outline-none form-input p-0"
+          className="text-foreground mr-5 min-w-0 focus:shadow-none text-2xl bg-transparent border-none outline-none focus:outline-none p-0"
         />
         <button
           type="button"
@@ -68,7 +69,7 @@ export const Converter = ({
   children,
 }: {
   onChange: (value: BigNumber) => void;
-  children: React.ReactNode;
+  children?: React.ReactNode;
 }) => {
   const [icy, setIcy] = useState("");
   const [usdc, setUsdc] = useState("");

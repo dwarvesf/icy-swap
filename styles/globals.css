@@ -6,10 +6,6 @@ body {
   font-family: "IBM Plex Sans", sans-serif;
 }
 
-.title {
-  font-family: "Rubik Wet Paint", cursive;
-}
-
 /* Chrome, Safari, Edge, Opera */
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {

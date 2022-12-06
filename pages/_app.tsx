@@ -1,4 +1,3 @@
-import "@fontsource/rubik-wet-paint";
 import "@fontsource/ibm-plex-sans";
 import "@fontsource/ibm-plex-sans/500.css";
 import "@fontsource/ibm-plex-sans/700.css";
@@ -7,6 +6,7 @@ import type { AppProps } from "next/app";
 import { WagmiConfig, createClient, chain } from "wagmi";
 import { ConnectKitProvider, getDefaultClient } from "connectkit";
 import BigNumber from "bignumber.js";
+import { Toaster } from "react-hot-toast";
 BigNumber.config({ EXPONENTIAL_AT: 1e9 });
 
 const client = createClient(
@@ -20,6 +20,7 @@ export default function App({ Component, pageProps }: AppProps) {
   return (
     <WagmiConfig client={client}>
       <ConnectKitProvider theme="soft">
+        <Toaster />
         <Component {...pageProps} />
       </ConnectKitProvider>
     </WagmiConfig>

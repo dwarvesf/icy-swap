@@ -68,20 +68,20 @@ export default function Home() {
                     >
                       earn.d.foundation
                     </a>{" "}
-                    to see available Quests and r&d topics
+                    to see available quests and r&d topics.
                   </p>
                 </li>
                 <li className="flex gap-1 items-center">
                   <ChevronRightIcon width={20} height={20} />
                   <p>
-                    Join our discussion & events at{" "}
+                    Join discussion & events at{" "}
                     <a
                       rel="noreferrer"
                       target="_blank"
                       href="https://discord.gg/dwarvesv"
                       className="text-brand"
                     >
-                      our Discord
+                      our Discord.
                     </a>
                   </p>
                 </li>

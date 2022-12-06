@@ -9,7 +9,6 @@ import {
 import { ICY_SWAPPER_CONTRACT_ADDRESS } from "../envs";
 
 export function useApproveToken(
-  amount: string,
   token: `0x${string}`,
   owner: `0x${string}` = constants.AddressZero
 ) {
@@ -26,7 +25,7 @@ export function useApproveToken(
     address: token,
     abi: erc20ABI,
     functionName: "approve",
-    args: [ICY_SWAPPER_CONTRACT_ADDRESS, BigNumber.from(amount)],
+    args: [ICY_SWAPPER_CONTRACT_ADDRESS, constants.MaxUint256],
   });
 
   const {
@@ -38,7 +37,7 @@ export function useApproveToken(
   const { isLoading: approving } = useWaitForTransaction(data);
 
   return {
-    isApproved: !allowance ? false : allowance.gte(amount),
+    isApproved: !allowance?.isZero(),
     approve: write,
     confirmingApprove,
     approving,
