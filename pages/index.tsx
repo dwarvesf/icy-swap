@@ -10,28 +10,28 @@ export default function Home() {
   return (
     <div>
       <Head>
-        <title>ICY Swap</title>
-        <meta name="title" content="ICY Swap" />
+        <title>🧊 $ICY</title>
+        <meta name="title" content="🧊 $ICY" />
         <meta
           name="description"
-          content="$ICY is the token of the Dwarves Network, used to reward network members. Earn $ICY now."
+          content="The Dwarves Community Token, use $ICY to claim $USDC, exclusive merch & more benefits later on."
         />
 
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://icy.d.foundation" />
-        <meta property="og:title" content="ICY Swap" />
+        <meta property="og:title" content="🧊 $ICY" />
         <meta
           property="og:description"
-          content="$ICY is the token of the Dwarves Network, used to reward network members. Earn $ICY now."
+          content="The Dwarves Community Token, use $ICY to claim $USDC, exclusive merch & more benefits later on."
         />
         <meta property="og:image" content="/banner.png" />
 
         <meta property="twitter:card" content="summary_large_image" />
         <meta property="twitter:url" content="https://icy.d.foundation" />
-        <meta property="twitter:title" content="ICY Swap" />
+        <meta property="twitter:title" content="🧊 $ICY" />
         <meta
           property="twitter:description"
-          content="$ICY is the token of the Dwarves Network, used to reward network members. Earn $ICY now."
+          content="The Dwarves Community Token, use $ICY to claim $USDC, exclusive merch & more benefits later on."
         />
         <meta property="twitter:image" content="/banner.png" />
       </Head>
