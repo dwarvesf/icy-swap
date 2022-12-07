@@ -1,6 +1,21 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+![banner](./public/banner.png)
 
-## Getting Started
+## :information_source: Information
+
+- [Website](https://icy.d.foundation)
+- Polygon network
+- 1 $ICY = **1.5** $USDC
+- You can earn $ICY by:
+  - Contribute to brainery
+  - Sharing & discuss
+  - Do many more things at [earn.d.foundation](https://earn.d.foundation)
+
+## :camera: Screenshots
+
+![screenshot 1](./screenshot.png)
+![screenshot 2](./screenshot-2.png)
+
+## :running: Run the project (for devs)
 
 First, run the development server:
 
@@ -12,23 +27,19 @@ yarn dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
+## Environment Variables
 
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
+| Name                                       | Value | Note                                                                                     |
+| ------------------------------------------ | ----- | ---------------------------------------------------------------------------------------- |
+| `NEXT_PUBLIC_ICY_CONTRACT_ADDRESS`         |       |                                                                                          |
+| `NEXT_PUBLIC_USDC_CONTRACT_ADDRESS`        |       |                                                                                          |
+| `NEXT_PUBLIC_ICY_SWAPPER_CONTRACT_ADDRESS` |       |                                                                                          |
+| `NEXT_PUBLIC_RATE`                         |       | This is just for showing on UI, changing this does not change the actual swapping amount |
+| `WEBHOOK_ID`                               |       | Discord webhook                                                                          |
+| `WEBHOOK_TOKEN`                            |       | Discord webhook                                                                          |
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
+## :pray: Credits
 
-## Learn More
+A big thank to all who contributed to this project!
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+[![Contributing](https://contrib.rocks/image?repo=dwarvesf/icy-swap)](https://github.com/dwarvesf/icy-swap/graphs/contributors)
