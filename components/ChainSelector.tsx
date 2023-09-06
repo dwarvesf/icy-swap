@@ -19,7 +19,7 @@ export const ChainSelector = () => {
         <Listbox.Button
           className={({ open }) =>
             cln(
-              "flex space-x-2 h-full text-white hover:bg-white/5 active:bg-white/5 px-2 rounded-lg flex items-center transition-all duration-100 ease-in-out",
+              "space-x-2 h-full text-white hover:bg-white/5 active:bg-white/5 px-2 rounded-lg flex items-center transition-all duration-100 ease-in-out",
               {
                 "bg-white/10": open,
               }
@@ -39,9 +39,9 @@ export const ChainSelector = () => {
           )}
           <ChevronDownIcon width={20} height={20} />
         </Listbox.Button>
-        <Listbox.Options className="right-0 min-w-[200px] absolute top-full translate-y-2 bg-foreground-100 border border-gray-700 rounded-lg p-2 shadow">
+        <Listbox.Options className="absolute left-0 top-full p-2 rounded-lg border border-gray-700 shadow translate-y-2 min-w-[200px] bg-foreground-100">
           <Listbox.Option
-            className="text-white flex space-x-2 items-center hover:bg-white/5 rounded-lg p-2 cursor-pointer transition-all duration-100 ease-in-out"
+            className="flex items-center p-2 space-x-2 text-white rounded-lg transition-all duration-100 ease-in-out cursor-pointer hover:bg-white/5"
             value={defaultChain.polygon.id}
           >
             <Image width={16} height={16} src="/polygon.svg" alt="" />

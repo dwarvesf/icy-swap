@@ -38,7 +38,7 @@ export default function Home() {
 
       <main>
         <div className="flex relative flex-col items-center w-screen min-h-screen text-white bg-foreground">
-          <div className="flex gap-4 pb-10 mt-5 mr-5 mb-auto ml-auto md:justify-end md:pb-0">
+          <div className="flex z-40 gap-4 pb-10 mx-auto mt-5 mb-auto md:justify-end md:pb-0 md:mr-5 md:ml-auto">
             <ChainSelector />
             <ConnectKitButton />
           </div>
