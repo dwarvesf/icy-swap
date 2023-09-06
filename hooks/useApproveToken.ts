@@ -1,4 +1,5 @@
-import { BigNumber, constants } from "ethers";
+import { BigNumber as ethersBN, constants } from "ethers";
+import { BigNumber } from "bignumber.js";
 import {
   erc20ABI,
   useContractRead,
@@ -10,7 +11,8 @@ import { ICY_SWAPPER_CONTRACT_ADDRESS } from "../envs";
 
 export function useApproveToken(
   token: `0x${string}`,
-  owner: `0x${string}` = constants.AddressZero
+  owner: `0x${string}` = constants.AddressZero,
+  value: BigNumber
 ) {
   const { data: allowance } = useContractRead({
     functionName: "allowance",
@@ -25,7 +27,7 @@ export function useApproveToken(
     address: token,
     abi: erc20ABI,
     functionName: "approve",
-    args: [ICY_SWAPPER_CONTRACT_ADDRESS, constants.MaxUint256],
+    args: [ICY_SWAPPER_CONTRACT_ADDRESS, ethersBN.from(value.toString())],
   });
 
   const {
@@ -36,8 +38,11 @@ export function useApproveToken(
 
   const { isLoading: approving } = useWaitForTransaction(data);
 
+  const isWithinAllowanceCap = allowance?.gte(value.toString());
+
   return {
-    isApproved: !allowance?.isZero(),
+    isApproved: !allowance?.isZero() && isWithinAllowanceCap,
+    isWithinAllowanceCap,
     approve: write,
     confirmingApprove,
     approving,

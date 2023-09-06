@@ -7,7 +7,7 @@ import {
   useWaitForTransaction,
 } from "wagmi";
 import { Converter } from "../Converter";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import cln from "classnames";
 import { BigNumber } from "bignumber.js";
 import { ICY_CONTRACT_ADDRESS, ICY_SWAPPER_CONTRACT_ADDRESS } from "../../envs";
@@ -50,15 +50,15 @@ export const Swap = () => {
     approving,
     isApproved,
     approve: _approve,
-  } = useApproveToken(ICY_CONTRACT_ADDRESS, address);
+  } = useApproveToken(ICY_CONTRACT_ADDRESS, address, value);
 
   const notEnoughBal = !balance || balance.value.lt(value.toString());
 
   const [icy, setIcy] = useState("");
   const [usdc, setUsdc] = useState("");
 
-  const swap = () => {
-    if (writeAsync) {
+  const swap = useCallback(() => {
+    if (writeAsync && isApproved) {
       writeAsync()
         .then((data) => data.wait())
         .then(async (data) => {
@@ -76,14 +76,16 @@ export const Swap = () => {
         position: "bottom-center",
       });
     }
-  };
+  }, [writeAsync, isApproved, address, value]);
 
   const approve = () => {
     _approve?.();
   };
 
+  const loading = confirmingSwap || confirmingApprove || swapping || approving;
+
   return (
-    <div className="flex flex-col items-center justify-center">
+    <div className="flex flex-col justify-center items-center">
       <div>
         <Converter
           icy={icy}
@@ -99,10 +101,12 @@ export const Swap = () => {
           "bg-gray-400": value.isZero() || value.isNegative() || notEnoughBal,
           "bg-brand": !value.isZero() && !value.isNegative(),
         })}
-        disabled={value.isZero() || value.isNegative() || notEnoughBal}
+        disabled={
+          value.isZero() || value.isNegative() || notEnoughBal || loading
+        }
         onClick={!isApproved ? approve : swap}
       >
-        {confirmingSwap || confirmingApprove || swapping || approving ? (
+        {loading ? (
           <Spinner className="w-5 h-5" />
         ) : !isApproved ? (
           "Approve"
@@ -112,7 +116,7 @@ export const Swap = () => {
       </button>
 
       {isOutOfMoneyError ? (
-        <p className="mt-2 text-red-400 font-medium">
+        <p className="mt-2 font-medium text-red-400">
           Error: contract out of money
         </p>
       ) : null}

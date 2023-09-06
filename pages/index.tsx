@@ -37,15 +37,15 @@ export default function Home() {
       </Head>
 
       <main>
-        <div className="text-white flex flex-col justify-center items-center bg-foreground overflow-auto relative h-screen w-screen">
-          <div className="z-50 fixed flex flex-col-reverse md:flex-row gap-4 md:justify-end top-5 right-5">
+        <div className="flex relative flex-col items-center w-screen min-h-screen text-white bg-foreground">
+          <div className="flex gap-4 pb-10 mt-5 mr-5 mb-auto ml-auto md:justify-end md:pb-0">
             <ChainSelector />
             <ConnectKitButton />
           </div>
-          <div className="mt-40 md:mt-0 max-w-5xl mx-auto flex flex-col-reverse gap-y-20 md:gap-y-0 p-5 md:flex-row w-full justify-between md:p-20 md:pt-0 md:pb-10">
-            <div className="flex-1 flex flex-col">
+          <div className="flex flex-col-reverse gap-y-20 justify-between p-5 mx-auto w-full max-w-5xl md:flex-row md:gap-y-0 md:p-20 md:my-auto">
+            <div className="flex flex-col flex-1">
               <Image width={64} height={64} src="/ICY.png" alt="" />
-              <p className="mt-5 text-left text-5xl font-semibold">
+              <p className="mt-5 text-5xl font-semibold text-left">
                 The token of
                 <br />
                 <span className="text-brand">Dwarves Network</span>
@@ -54,7 +54,7 @@ export default function Home() {
                 A mix between an open company &amp; a community
               </p>
               <p className="mt-10 text-lg font-medium">1 $ICY = {RATE} $USDC</p>
-              <div className="h-px w-10 bg-gray-600 my-3" />
+              <div className="my-3 w-10 h-px bg-gray-600" />
               <ul className="flex flex-col gap-2 -ml-1">
                 <li className="flex gap-1 items-center">
                   <ChevronRightIcon width={20} height={20} />
@@ -88,11 +88,11 @@ export default function Home() {
               </ul>
             </div>
             <div className="flex flex-col flex-shrink-0">
-              <div className="hidden md:block mb-5 w-16 h-16" />
+              <div className="hidden mb-5 w-16 h-16 md:block" />
               <Swap />
             </div>
           </div>
-          <div className="my-10 md:my-0 ml-auto md:fixed bottom-5 right-5 flex flex-col items-start">
+          <div className="flex flex-col items-start mt-auto mr-5 mb-10 ml-auto">
             <a
               href="https://careers.d.foundation/"
               target="_blank"
