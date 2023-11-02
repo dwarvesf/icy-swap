@@ -55,7 +55,7 @@ export const Swap = () => {
   const notEnoughBal = !balance || balance.value.lt(value.toString());
 
   const [icy, setIcy] = useState("");
-  const [usdc, setUsdc] = useState("");
+  const [usdt, setUsdt] = useState("");
 
   const swap = useCallback(() => {
     if (writeAsync && isApproved) {
@@ -63,7 +63,7 @@ export const Swap = () => {
         .then((data) => data.wait())
         .then(async (data) => {
           setIcy("");
-          setUsdc("");
+          setUsdt("");
           toast.success("Success", { position: "bottom-center" });
           fetch(
             `/api/discord?address=${address}&tx=${`${defaultChain.polygon.blockExplorers?.default.url}/tx/${data.transactionHash}`}&value=${value
@@ -90,8 +90,8 @@ export const Swap = () => {
         <Converter
           icy={icy}
           setIcy={setIcy}
-          usdc={usdc}
-          setUsdc={setUsdc}
+          usdt={usdt}
+          setUsdt={setUsdt}
           onChange={setValue}
         />
       </div>

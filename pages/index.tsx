@@ -14,7 +14,7 @@ export default function Home() {
         <meta name="title" content="🧊 $ICY" />
         <meta
           name="description"
-          content="The Dwarves Community Token, use $ICY to claim $USDC, exclusive merch & more benefits later on."
+          content="The Dwarves Community Token, use $ICY to claim $USDT, exclusive merch & more benefits later on."
         />
 
         <meta property="og:type" content="website" />
@@ -22,7 +22,7 @@ export default function Home() {
         <meta property="og:title" content="🧊 $ICY" />
         <meta
           property="og:description"
-          content="The Dwarves Community Token, use $ICY to claim $USDC, exclusive merch & more benefits later on."
+          content="The Dwarves Community Token, use $ICY to claim $USDT, exclusive merch & more benefits later on."
         />
         <meta property="og:image" content="/banner.png" />
 
@@ -31,7 +31,7 @@ export default function Home() {
         <meta property="twitter:title" content="🧊 $ICY" />
         <meta
           property="twitter:description"
-          content="The Dwarves Community Token, use $ICY to claim $USDC, exclusive merch & more benefits later on."
+          content="The Dwarves Community Token, use $ICY to claim $USDT, exclusive merch & more benefits later on."
         />
         <meta property="twitter:image" content="/banner.png" />
       </Head>
@@ -53,7 +53,7 @@ export default function Home() {
               <p className="mt-1 text-lg">
                 A mix between an open company &amp; a community
               </p>
-              <p className="mt-10 text-lg font-medium">1 $ICY = {RATE} $USDC</p>
+              <p className="mt-10 text-lg font-medium">1 $ICY = {RATE} $USDT</p>
               <div className="my-3 w-10 h-px bg-gray-600" />
               <ul className="flex flex-col gap-2 -ml-1">
                 <li className="flex gap-1 items-center">

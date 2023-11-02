@@ -4,7 +4,7 @@
 
 - [Website](https://icy.d.foundation)
 - Polygon network
-- 1 $ICY = **1.5** $USDC
+- 1 $ICY = **1.5** $USDT
 - You can earn $ICY by:
   - Contribute to brainery
   - Sharing & discuss
@@ -32,7 +32,7 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 | Name                                       | Value | Note                                                                                     |
 | ------------------------------------------ | ----- | ---------------------------------------------------------------------------------------- |
 | `NEXT_PUBLIC_ICY_CONTRACT_ADDRESS`         |       |                                                                                          |
-| `NEXT_PUBLIC_USDC_CONTRACT_ADDRESS`        |       |                                                                                          |
+| `NEXT_PUBLIC_USDT_CONTRACT_ADDRESS`        |       |                                                                                          |
 | `NEXT_PUBLIC_ICY_SWAPPER_CONTRACT_ADDRESS` |       |                                                                                          |
 | `NEXT_PUBLIC_RATE`                         |       | This is just for showing on UI, changing this does not change the actual swapping amount |
 | `WEBHOOK_ID`                               |       | Discord webhook                                                                          |

@@ -4,7 +4,7 @@ import { useAccount, useBalance } from "wagmi";
 import Image from "next/image";
 import { address as contractAddress } from "../contract/icy";
 import { BigNumber } from "bignumber.js";
-import { ICY_CONTRACT_ADDRESS, RATE, USDC_CONTRACT_ADDRESS } from "../envs";
+import { ICY_CONTRACT_ADDRESS, RATE, USDT_CONTRACT_ADDRESS } from "../envs";
 import { ArrowDownIcon } from "@heroicons/react/20/solid";
 
 const Input = (props: {
@@ -23,7 +23,7 @@ const Input = (props: {
   });
 
   return (
-    <div className="relative z-10 shadow-md flex flex-col bg-gray-100 rounded md:px-5 md:py-4 px-3 py-2">
+    <div className="flex relative z-10 flex-col py-2 px-3 bg-gray-100 rounded shadow-md md:py-4 md:px-5">
       <div className="flex justify-between">
         <p className="text-xs font-medium text-gray-500">{props.label}</p>
         <button
@@ -35,7 +35,7 @@ const Input = (props: {
           Balance: {balance?.formatted} ${balance?.symbol}
         </button>
       </div>
-      <div className="flex mt-4 justify-between">
+      <div className="flex justify-between mt-4">
         <input
           value={props.value}
           onChange={(e) =>
@@ -43,12 +43,12 @@ const Input = (props: {
             props.onChange(e.target.value)
           }
           placeholder="0.00"
-          className="text-foreground mr-5 min-w-0 focus:shadow-none text-2xl bg-transparent border-none outline-none focus:outline-none p-0"
+          className="p-0 mr-5 min-w-0 text-2xl bg-transparent border-none outline-none focus:shadow-none focus:outline-none text-foreground"
         />
         <button
           type="button"
           onClick={props.onAddToken}
-          className="w-[92px] flex-shrink-0 flex rounded-full bg-white border border-gray-200 py-1 px-2 space-x-2 items-center"
+          className="flex flex-shrink-0 items-center py-1 px-2 space-x-2 bg-white rounded-full border border-gray-200 w-[92px]"
         >
           <Image
             className="flex-shrink-0"
@@ -65,17 +65,17 @@ const Input = (props: {
 };
 
 export const Converter = ({
-  setUsdc,
+  setUsdt,
   icy,
-  usdc,
+  usdt,
   setIcy,
   onChange,
   children,
 }: {
   icy: string;
   setIcy: (v: string) => void;
-  usdc: string;
-  setUsdc: (v: string) => void;
+  usdt: string;
+  setUsdt: (v: string) => void;
   onChange: (value: BigNumber) => void;
   children?: React.ReactNode;
 }) => {
@@ -119,7 +119,7 @@ export const Converter = ({
         value={icy}
         onChange={(v) => {
           setIcy(v);
-          setUsdc(`${Number(v) * RATE}`);
+          setUsdt(`${Number(v) * RATE}`);
         }}
         label="From"
         token={{
@@ -141,21 +141,21 @@ export const Converter = ({
         <ArrowDownIcon width={20} height={20} className="mx-auto text-white" />
       )}
       <Input
-        value={usdc}
+        value={usdt}
         onChange={(v) => {
-          setUsdc(v);
+          setUsdt(v);
           setIcy(`${Number(v) / RATE}`);
         }}
         label="To"
         token={{
-          icon: "/USDC.webp",
-          symbol: "USDC",
-          address: USDC_CONTRACT_ADDRESS,
+          icon: "/USDT.webp",
+          symbol: "USDT",
+          address: USDT_CONTRACT_ADDRESS,
         }}
         onAddToken={() =>
           requestWatch({
-            address: USDC_CONTRACT_ADDRESS,
-            symbol: "USDC",
+            address: USDT_CONTRACT_ADDRESS,
+            symbol: "USDT",
             decimals: 6,
           })
         }

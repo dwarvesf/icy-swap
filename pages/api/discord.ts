@@ -26,7 +26,7 @@ export default function handler(req: NextApiRequest, res: NextApiResponse<{}>) {
         5
       )}...${address?.slice(
         -5
-      )}\` just claimed ${value} ICY for ${valueUsd} USDC\n:chains: Transaction: [Polygonscan](${tx})\n\n:robot: Head to [earn.d.foundation](https://earn.d.foundation) to see available quests and r&d topics.`
+      )}\` just claimed ${value} ICY for ${valueUsd} USDT\n:chains: Transaction: [Polygonscan](${tx})\n\n:robot: Head to [earn.d.foundation](https://earn.d.foundation) to see available quests and r&d topics.`
     )
     .setTitle("$ICY Swapped");
 
