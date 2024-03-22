@@ -46,7 +46,7 @@ const Input = (props: {
         <button
           type="button"
           onClick={props.onAddToken}
-          className="flex flex-shrink-0 items-center py-1 px-2 space-x-2 bg-white rounded-full border border-gray-200 w-[92px]"
+          className="flex flex-shrink-0 items-center py-1 pr-2 pl-1 space-x-1.5 bg-white rounded-full border border-gray-200"
         >
           <Image
             className="flex-shrink-0"
@@ -147,13 +147,13 @@ export const Converter = ({
         label="To"
         token={{
           icon: "/usdc.webp",
-          symbol: "usdc",
+          symbol: "USDbC",
           address: USDC_CONTRACT_ADDRESS,
         }}
         onAddToken={() =>
           requestWatch({
             address: USDC_CONTRACT_ADDRESS,
-            symbol: "usdc",
+            symbol: "USDbC",
             decimals: 6,
           })
         }
