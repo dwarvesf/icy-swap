@@ -3,8 +3,7 @@ import cln from "classnames";
 import { useAccount, useBalance } from "wagmi";
 import Image from "next/image";
 import { address as contractAddress } from "../contract/icy";
-import { BigNumber } from "bignumber.js";
-import { ICY_CONTRACT_ADDRESS, RATE, USDT_CONTRACT_ADDRESS } from "../envs";
+import { ICY_CONTRACT_ADDRESS, RATE, USDC_CONTRACT_ADDRESS } from "../envs";
 import { ArrowDownIcon } from "@heroicons/react/20/solid";
 
 const Input = (props: {
@@ -18,8 +17,7 @@ const Input = (props: {
   const { address } = useAccount();
   const { data: balance } = useBalance({
     token: props.token.address,
-    addressOrName: address,
-    watch: true,
+    address,
   });
 
   return (
@@ -65,18 +63,18 @@ const Input = (props: {
 };
 
 export const Converter = ({
-  setUsdt,
+  setUsdc,
   icy,
-  usdt,
+  usdc,
   setIcy,
   onChange,
   children,
 }: {
   icy: string;
   setIcy: (v: string) => void;
-  usdt: string;
-  setUsdt: (v: string) => void;
-  onChange: (value: BigNumber) => void;
+  usdc: string;
+  setUsdc: (v: string) => void;
+  onChange: (value: bigint) => void;
   children?: React.ReactNode;
 }) => {
   const requestWatch = async ({
@@ -103,9 +101,9 @@ export const Converter = ({
 
   useEffect(() => {
     if (icy) {
-      onChange(new BigNumber(icy).times(10 ** 18));
+      onChange(BigInt(icy) * BigInt(10 ** 18));
     } else {
-      onChange(new BigNumber(0));
+      onChange(BigInt(0));
     }
   }, [icy, onChange]);
 
@@ -119,7 +117,7 @@ export const Converter = ({
         value={icy}
         onChange={(v) => {
           setIcy(v);
-          setUsdt(`${Number(v) * RATE}`);
+          setUsdc(`${Number(v) * RATE}`);
         }}
         label="From"
         token={{
@@ -141,21 +139,21 @@ export const Converter = ({
         <ArrowDownIcon width={20} height={20} className="mx-auto text-white" />
       )}
       <Input
-        value={usdt}
+        value={usdc}
         onChange={(v) => {
-          setUsdt(v);
+          setUsdc(v);
           setIcy(`${Number(v) / RATE}`);
         }}
         label="To"
         token={{
-          icon: "/USDT.webp",
-          symbol: "USDT",
-          address: USDT_CONTRACT_ADDRESS,
+          icon: "/usdc.webp",
+          symbol: "usdc",
+          address: USDC_CONTRACT_ADDRESS,
         }}
         onAddToken={() =>
           requestWatch({
-            address: USDT_CONTRACT_ADDRESS,
-            symbol: "USDT",
+            address: USDC_CONTRACT_ADDRESS,
+            symbol: "usdc",
             decimals: 6,
           })
         }

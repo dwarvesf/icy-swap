@@ -1,37 +1,46 @@
 import {
   useAccount,
   useBalance,
-  usePrepareContractWrite,
-  useContractWrite,
-  chain as defaultChain,
-  useWaitForTransaction,
+  useBlockNumber,
+  useSimulateContract,
+  useWaitForTransactionReceipt,
+  useWriteContract,
 } from "wagmi";
+import { base } from "wagmi/chains";
 import { Converter } from "../Converter";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import cln from "classnames";
-import { BigNumber } from "bignumber.js";
 import { ICY_CONTRACT_ADDRESS, ICY_SWAPPER_CONTRACT_ADDRESS } from "../../envs";
 import { abi as swapperABI } from "../../contract/swapper";
 import { useApproveToken } from "../../hooks/useApproveToken";
 import { Spinner } from "../Spinner";
 import toast from "react-hot-toast";
+import { useQueryClient } from "@tanstack/react-query";
+
+const getContractConfig = (value: bigint) => ({
+  address: ICY_SWAPPER_CONTRACT_ADDRESS,
+  abi: swapperABI,
+  functionName: "swap",
+  args: [value.toString()],
+});
 
 export const Swap = () => {
+  const queryClient = useQueryClient();
+  const { data: blockNumber } = useBlockNumber({ watch: true });
   const { address } = useAccount();
-  const { data: balance } = useBalance({
+  const { data: balance, queryKey } = useBalance({
     token: ICY_CONTRACT_ADDRESS,
-    addressOrName: address,
-    watch: true,
+    address,
   });
 
-  const [value, setValue] = useState(new BigNumber(0));
+  useEffect(() => {
+    queryClient.invalidateQueries({ queryKey });
+  }, [blockNumber, queryClient]);
 
-  const { config, error } = usePrepareContractWrite({
-    address: ICY_SWAPPER_CONTRACT_ADDRESS,
-    abi: swapperABI,
-    functionName: "swap",
-    args: [value.toString()],
-  });
+  const [value, setValue] = useState(BigInt(0));
+
+  // @ts-ignore
+  const { error } = useSimulateContract(getContractConfig(value));
 
   const isOutOfMoneyError = error?.message
     ?.toLowerCase()
@@ -39,11 +48,11 @@ export const Swap = () => {
 
   const {
     data,
-    writeAsync,
-    isLoading: confirmingSwap,
-  } = useContractWrite(config as any);
+    writeContractAsync,
+    isPending: confirmingSwap,
+  } = useWriteContract();
 
-  const { isLoading: swapping } = useWaitForTransaction(data);
+  const { isLoading: swapping } = useWaitForTransactionReceipt({ hash: data });
 
   const {
     confirmingApprove,
@@ -52,23 +61,24 @@ export const Swap = () => {
     approve: _approve,
   } = useApproveToken(ICY_CONTRACT_ADDRESS, address, value);
 
-  const notEnoughBal = !balance || balance.value.lt(value.toString());
+  const notEnoughBal = !balance || balance.value < value;
 
   const [icy, setIcy] = useState("");
-  const [usdt, setUsdt] = useState("");
+  const [usdc, setUsdc] = useState("");
 
   const swap = useCallback(() => {
-    if (writeAsync && isApproved) {
-      writeAsync()
-        .then((data) => data.wait())
-        .then(async (data) => {
+    if (isApproved) {
+      // @ts-ignore
+      writeContractAsync(getContractConfig(value))
+        .then((data: any) => data.wait())
+        .then(async (data: any) => {
           setIcy("");
-          setUsdt("");
+          setUsdc("");
           toast.success("Success", { position: "bottom-center" });
           fetch(
-            `/api/discord?address=${address}&tx=${`${defaultChain.polygon.blockExplorers?.default.url}/tx/${data.transactionHash}`}&value=${value
-              .div(10 ** 18)
-              .toString()}`
+            `/api/discord?address=${address}&tx=${`${base.blockExplorers?.default.url}/tx/${data.transactionHash}`}&value=${(
+              value / BigInt(10 ** 18)
+            ).toString()}`
           );
         })
         .catch(() => null);
@@ -76,7 +86,7 @@ export const Swap = () => {
         position: "bottom-center",
       });
     }
-  }, [writeAsync, isApproved, address, value]);
+  }, [address, isApproved, value, writeContractAsync]);
 
   const approve = () => {
     _approve?.();
@@ -90,20 +100,18 @@ export const Swap = () => {
         <Converter
           icy={icy}
           setIcy={setIcy}
-          usdt={usdt}
-          setUsdt={setUsdt}
+          usdc={usdc}
+          setUsdc={setUsdc}
           onChange={setValue}
         />
       </div>
       <button
         type="button"
         className={cln("w-1/2 mt-10 text-white px-5 py-2.5 rounded-sm", {
-          "bg-gray-400": value.isZero() || value.isNegative() || notEnoughBal,
-          "bg-brand": !value.isZero() && !value.isNegative(),
+          "bg-gray-400": value <= 0 || notEnoughBal,
+          "bg-brand": value > 0,
         })}
-        disabled={
-          value.isZero() || value.isNegative() || notEnoughBal || loading
-        }
+        disabled={value <= 0 || notEnoughBal || loading}
         onClick={!isApproved ? approve : swap}
       >
         {loading ? (
