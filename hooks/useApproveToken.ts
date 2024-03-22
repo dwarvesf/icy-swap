@@ -1,49 +1,47 @@
-import { BigNumber as ethersBN, constants } from "ethers";
-import { BigNumber } from "bignumber.js";
+import { constants } from "ethers";
+import { erc20Abi } from "viem";
 import {
-  erc20ABI,
-  useContractRead,
-  useContractWrite,
-  usePrepareContractWrite,
-  useWaitForTransaction,
+  useReadContract,
+  useWaitForTransactionReceipt,
+  useWriteContract,
 } from "wagmi";
 import { ICY_SWAPPER_CONTRACT_ADDRESS } from "../envs";
+
+const getConfig = (token: `0x${string}`, value: bigint) => ({
+  address: token,
+  abi: erc20Abi,
+  functionName: "approve",
+  args: [ICY_SWAPPER_CONTRACT_ADDRESS, value.toString()],
+});
 
 export function useApproveToken(
   token: `0x${string}`,
   owner: `0x${string}` = constants.AddressZero,
-  value: BigNumber
+  value: bigint
 ) {
-  const { data: allowance } = useContractRead({
+  // @ts-ignore
+  const { data: allowance = BigInt(0) } = useReadContract({
     functionName: "allowance",
     args: [owner, ICY_SWAPPER_CONTRACT_ADDRESS],
-    abi: erc20ABI,
+    abi: erc20Abi,
     address: token,
-    isDataEqual: (prev, next) => prev === next,
-    watch: true,
-  });
-
-  const { config } = usePrepareContractWrite({
-    address: token,
-    abi: erc20ABI,
-    functionName: "approve",
-    args: [ICY_SWAPPER_CONTRACT_ADDRESS, ethersBN.from(value.toString())],
   });
 
   const {
     data,
-    write,
-    isLoading: confirmingApprove,
-  } = useContractWrite(config);
+    writeContract,
+    isPending: confirmingApprove,
+  } = useWriteContract();
 
-  const { isLoading: approving } = useWaitForTransaction(data);
+  const { isLoading: approving } = useWaitForTransactionReceipt({ hash: data });
 
-  const isWithinAllowanceCap = allowance?.gte(value.toString());
+  const isWithinAllowanceCap = allowance >= value;
 
   return {
-    isApproved: !allowance?.isZero() && isWithinAllowanceCap,
+    isApproved: allowance !== BigInt(0) && isWithinAllowanceCap,
     isWithinAllowanceCap,
-    approve: write,
+    // @ts-ignore
+    approve: () => writeContract(getConfig(token, value)),
     confirmingApprove,
     approving,
   };

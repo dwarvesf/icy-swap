@@ -13,12 +13,13 @@
     "@fontsource/ibm-plex-sans": "^4.5.13",
     "@headlessui/react": "^1.7.4",
     "@heroicons/react": "^2.0.13",
+    "@tanstack/react-query": "^5.28.6",
     "@types/node": "18.11.9",
     "@types/react": "18.0.24",
     "@types/react-dom": "18.0.8",
     "bignumber.js": "^9.1.1",
     "classnames": "^2.3.2",
-    "connectkit": "^0.0.2",
+    "connectkit": "^1.7.2",
     "discord.js": "^14.7.1",
     "eslint": "8.26.0",
     "eslint-config-next": "13.0.1",
@@ -27,8 +28,9 @@
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-hot-toast": "^2.4.0",
-    "typescript": "4.8.4",
-    "wagmi": "^0.7.10"
+    "typescript": "5.0.4",
+    "viem": "2.x",
+    "wagmi": "^2.5.12"
   },
   "devDependencies": {
     "@tailwindcss/forms": "^0.5.3",
