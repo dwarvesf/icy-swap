@@ -16,6 +16,7 @@ import { useApproveToken } from "../../hooks/useApproveToken";
 import { Spinner } from "../Spinner";
 import toast from "react-hot-toast";
 import { useQueryClient } from "@tanstack/react-query";
+import { formatUnits } from "viem";
 
 const getContractConfig = (value: bigint) => ({
   address: ICY_SWAPPER_CONTRACT_ADDRESS,

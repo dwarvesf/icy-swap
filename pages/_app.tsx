@@ -5,10 +5,8 @@ import "../styles/globals.css";
 import { WagmiProvider, http, createConfig } from "wagmi";
 import { mainnet, base } from "wagmi/chains";
 import { ConnectKitProvider, getDefaultConfig } from "connectkit";
-import BigNumber from "bignumber.js";
 import { Toaster } from "react-hot-toast";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-BigNumber.config({ EXPONENTIAL_AT: 1e9 });
 
 const config = createConfig(
   // @ts-ignore

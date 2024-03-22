@@ -109,8 +109,15 @@ export const Converter = ({
   };
 
   useEffect(() => {
+    if (icy.endsWith(".")) return;
+    let num = Number(icy);
+    let diffDeci = 0;
+    while (num !== 0 && !Number.isInteger(num)) {
+      diffDeci += 1;
+      num *= 10;
+    }
     if (icy) {
-      onChange(BigInt(icy.replaceAll(".", "")) * BigInt(10 ** 18));
+      onChange(BigInt(num) * BigInt(10 ** (18 - diffDeci)));
     } else {
       onChange(BigInt(0));
     }
