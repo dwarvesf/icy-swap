@@ -1,5 +1,4 @@
-import { constants } from "ethers";
-import { erc20Abi } from "viem";
+import { erc20Abi, zeroAddress } from "viem";
 import {
   useReadContract,
   useWaitForTransactionReceipt,
@@ -16,7 +15,7 @@ const getConfig = (token: `0x${string}`, value: bigint) => ({
 
 export function useApproveToken(
   token: `0x${string}`,
-  owner: `0x${string}` = constants.AddressZero,
+  owner: `0x${string}` = zeroAddress,
   value: bigint
 ) {
   // @ts-ignore

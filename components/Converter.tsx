@@ -1,3 +1,4 @@
+import { formatUnits } from "viem";
 import React, { useEffect } from "react";
 import cln from "classnames";
 import { useAccount, useBalance } from "wagmi";
@@ -20,6 +21,13 @@ const Input = (props: {
     address,
   });
 
+  const formatted = formatUnits(
+    balance?.value ?? BigInt(0),
+    balance?.decimals ?? 0
+  );
+
+  const symbol = balance?.symbol ? `$${balance.symbol}` : "";
+
   return (
     <div className="flex relative z-10 flex-col py-2 px-3 bg-gray-100 rounded shadow-md md:py-4 md:px-5">
       <div className="flex justify-between">
@@ -27,10 +35,10 @@ const Input = (props: {
         <button
           disabled={props.disableQuickFill}
           type="button"
-          onClick={() => props.onChange(balance?.formatted ?? "")}
+          onClick={() => props.onChange(formatted)}
           className="text-xs text-gray-500"
         >
-          Balance: {balance?.formatted} ${balance?.symbol}
+          Balance: {formatted} {symbol}
         </button>
       </div>
       <div className="flex justify-between mt-4">
@@ -40,8 +48,9 @@ const Input = (props: {
             !Number.isNaN(Number(e.target.value)) &&
             props.onChange(e.target.value)
           }
+          type="text"
           placeholder="0.00"
-          className="p-0 mr-5 min-w-0 text-2xl bg-transparent border-none outline-none focus:shadow-none focus:outline-none text-foreground"
+          className="p-0 mr-5 min-w-0 text-2xl bg-transparent !ring-transparent !border-none !shadow-none outline-none focus:outline-none text-foreground"
         />
         <button
           type="button"
@@ -101,7 +110,7 @@ export const Converter = ({
 
   useEffect(() => {
     if (icy) {
-      onChange(BigInt(icy) * BigInt(10 ** 18));
+      onChange(BigInt(icy.replaceAll(".", "")) * BigInt(10 ** 18));
     } else {
       onChange(BigInt(0));
     }
