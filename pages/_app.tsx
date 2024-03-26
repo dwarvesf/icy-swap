@@ -3,7 +3,7 @@ import "@fontsource/ibm-plex-sans/500.css";
 import "@fontsource/ibm-plex-sans/700.css";
 import "../styles/globals.css";
 import { WagmiProvider, http, createConfig } from "wagmi";
-import { mainnet, base } from "wagmi/chains";
+import { base } from "wagmi/chains";
 import { ConnectKitProvider, getDefaultConfig } from "connectkit";
 import { Toaster } from "react-hot-toast";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -11,9 +11,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 const config = createConfig(
   // @ts-ignore
   getDefaultConfig({
-    chains: [mainnet, base],
+    chains: [base],
     transports: {
-      [mainnet.id]: http(),
       [base.id]: http(),
     },
     walletConnectProjectId: "1830f624b03c2fc3d99fd758fb040ce0",
