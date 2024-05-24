@@ -163,13 +163,13 @@ export const Converter = ({
         label="To"
         token={{
           icon: "/usdc.webp",
-          symbol: "USDbC",
+          symbol: "USDC",
           address: USDC_CONTRACT_ADDRESS,
         }}
         onAddToken={() =>
           requestWatch({
             address: USDC_CONTRACT_ADDRESS,
-            symbol: "USDbC",
+            symbol: "USDC",
             decimals: 6,
           })
         }
