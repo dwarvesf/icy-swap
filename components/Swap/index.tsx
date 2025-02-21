@@ -6,26 +6,38 @@ import {
   useWaitForTransactionReceipt,
   useWriteContract,
 } from "wagmi";
-import { base } from "wagmi/chains";
 import { Converter } from "../Converter";
 import { useCallback, useEffect, useState } from "react";
 import cln from "classnames";
-import { ICY_CONTRACT_ADDRESS, ICY_SWAPPER_CONTRACT_ADDRESS } from "../../envs";
+import {
+  API_KEY,
+  BASE_URL,
+  ICY_CONTRACT_ADDRESS,
+  ICY_SWAPPER_CONTRACT_ADDRESS,
+} from "../../envs";
 import { abi as swapperABI } from "../../contract/swapper";
-import { useApproveToken } from "../../hooks/useApproveToken";
 import { Spinner } from "../Spinner";
 import toast from "react-hot-toast";
 import { useQueryClient } from "@tanstack/react-query";
-import { formatUnits } from "viem";
+import { validate as validateBtcAddr } from "bitcoin-address-validation";
+import { signatureRequest, signatureResponse } from "@/schemas";
+import { useApproveToken } from "@/hooks/useApproveToken";
 
-const getContractConfig = (value: bigint) => ({
+const getContractConfig = (
+  icy: BigInt,
+  btcAddr: string,
+  btc: BigInt,
+  nonce: BigInt,
+  deadline: BigInt,
+  signature: string
+) => ({
   address: ICY_SWAPPER_CONTRACT_ADDRESS,
   abi: swapperABI,
   functionName: "swap",
-  args: [value.toString()],
+  args: [icy, btcAddr, btc, nonce, deadline, signature],
 });
 
-export const Swap = () => {
+export const Swap = ({ rate }: { rate: number }) => {
   const queryClient = useQueryClient();
   const { data: blockNumber } = useBlockNumber({ watch: true });
   const { address } = useAccount();
@@ -51,6 +63,7 @@ export const Swap = () => {
     data,
     writeContractAsync,
     isPending: confirmingSwap,
+    error: swapError,
   } = useWriteContract();
 
   const { isLoading: swapping } = useWaitForTransactionReceipt({ hash: data });
@@ -65,45 +78,83 @@ export const Swap = () => {
   const notEnoughBal = !balance || balance.value < value;
 
   const [icy, setIcy] = useState("");
-  const [usdc, setUsdc] = useState("");
+  const [btc, setBtc] = useState("");
+  const [btcAddress, setBtcAddress] = useState("");
 
   const swap = useCallback(() => {
-    if (isApproved) {
-      // @ts-ignore
-      writeContractAsync(getContractConfig(value))
-        .then((data: any) => data.wait())
-        .then(async (data: any) => {
-          setIcy("");
-          setUsdc("");
-          toast.success("Success", { position: "bottom-center" });
-          fetch(
-            `/api/discord?address=${address}&tx=${`${base.blockExplorers?.default.url}/tx/${data.transactionHash}`}&value=${(
-              value / BigInt(10 ** 18)
-            ).toString()}`
-          );
-        })
-        .catch(() => null);
-      toast("Swapping...", {
-        position: "bottom-center",
-      });
+    if (!isApproved) return;
+    if (!validateBtcAddr(btcAddress)) {
+      window.alert("BTC address invalid");
+      return;
     }
-  }, [address, isApproved, value, writeContractAsync]);
+    const icyAmount = (+icy * 10 ** 18).toLocaleString("fullwide", {
+      useGrouping: false,
+      maximumFractionDigits: 18,
+      notation: "standard",
+    });
+    const btcAmount = Math.floor(+btc * 10 ** 8).toString();
+    if (+btcAmount < 1) {
+      window.alert("Invalid BTC amount");
+      return;
+    }
+    fetch(`${BASE_URL}/swap/generate-signature`, {
+      method: "POST",
+      headers: {
+        Authorization: `ApiKey ${API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(
+        signatureRequest.parse({
+          btc_address: btcAddress,
+          icy_amount: icyAmount,
+          btc_amount: btcAmount,
+        })
+      ),
+    })
+      .then((res) => res.json())
+      .then((res) => {
+        const { data } = signatureResponse.parse(res);
+        writeContractAsync(
+          getContractConfig(
+            BigInt(data.icy_amount),
+            btcAddress,
+            BigInt(data.btc_amount),
+            BigInt(data.nonce),
+            BigInt(data.deadline),
+            `0x${data.signature}`
+          )
+        )
+          .then((data: any) => data.wait())
+          .then(async () => {
+            setIcy("");
+            setBtc("");
+            toast.success("Success", { position: "bottom-center" });
+          })
+          .catch(() => null);
+        toast("Swapping...", {
+          position: "bottom-center",
+        });
+      });
+  }, [icy, btc, btcAddress, isApproved, writeContractAsync]);
 
   const approve = () => {
     _approve?.();
   };
 
-  const loading = confirmingSwap || confirmingApprove || swapping || approving;
+  const loading = confirmingSwap || swapping || confirmingApprove || approving;
 
   return (
     <div className="flex flex-col justify-center items-center">
       <div>
         <Converter
-          icy={icy}
-          setIcy={setIcy}
-          usdc={usdc}
-          setUsdc={setUsdc}
+          tokenA={icy}
+          setAmountTokenA={setIcy}
+          tokenB={btc}
+          setAmountTokenB={setBtc}
+          addressTokenB={btcAddress}
+          setAddressTokenB={setBtcAddress}
           onChange={setValue}
+          rate={rate}
         />
       </div>
       <button
@@ -112,13 +163,15 @@ export const Swap = () => {
           "bg-gray-400": value <= 0 || notEnoughBal,
           "bg-brand": value > 0,
         })}
-        disabled={value <= 0 || notEnoughBal || loading}
+        disabled={value <= 0 || loading || notEnoughBal}
         onClick={!isApproved ? approve : swap}
       >
         {loading ? (
           <Spinner className="w-5 h-5" />
         ) : !isApproved ? (
           "Approve"
+        ) : !rate ? (
+          "Cannot fetch rate"
         ) : (
           "Swap"
         )}

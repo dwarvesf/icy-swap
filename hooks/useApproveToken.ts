@@ -18,7 +18,6 @@ export function useApproveToken(
   owner: `0x${string}` = zeroAddress,
   value: bigint
 ) {
-  // @ts-ignore
   const { data: allowance = BigInt(0) } = useReadContract({
     functionName: "allowance",
     args: [owner, ICY_SWAPPER_CONTRACT_ADDRESS],

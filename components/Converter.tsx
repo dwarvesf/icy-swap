@@ -2,18 +2,20 @@ import { formatUnits } from "viem";
 import React, { useEffect } from "react";
 import cln from "classnames";
 import { useAccount, useBalance } from "wagmi";
+import { Tooltip, TooltipContent, TooltipTrigger } from "components/ui/tooltip";
 import Image from "next/image";
 import { address as contractAddress } from "../contract/icy";
-import { ICY_CONTRACT_ADDRESS, RATE, USDC_CONTRACT_ADDRESS } from "../envs";
+import { ICY_CONTRACT_ADDRESS } from "../envs";
 import { ArrowDownIcon } from "@heroicons/react/20/solid";
+import { QuestionMarkCircleIcon } from "@heroicons/react/24/solid";
 
 const Input = (props: {
   label: string;
   disableQuickFill?: boolean;
-  token: { address: `0x${string}`; icon: string; symbol: string };
+  token: { address?: `0x${string}`; icon: string; symbol: string };
   value: string;
   onChange: (v: string) => void;
-  onAddToken: () => void;
+  onAddToken?: () => void;
 }) => {
   const { address } = useAccount();
   const { data: balance } = useBalance({
@@ -32,14 +34,16 @@ const Input = (props: {
     <div className="flex relative z-10 flex-col py-2 px-3 bg-gray-100 rounded shadow-md md:py-4 md:px-5">
       <div className="flex justify-between">
         <p className="text-xs font-medium text-gray-500">{props.label}</p>
-        <button
-          disabled={props.disableQuickFill}
-          type="button"
-          onClick={() => props.onChange(formatted)}
-          className="text-xs text-gray-500"
-        >
-          Balance: {formatted} {symbol}
-        </button>
+        {balance && props.token.address ? (
+          <button
+            disabled={props.disableQuickFill}
+            type="button"
+            onClick={() => props.onChange(formatted)}
+            className="text-xs text-gray-500"
+          >
+            Balance: {formatted} {symbol}
+          </button>
+        ) : null}
       </div>
       <div className="flex justify-between mt-4">
         <input
@@ -72,18 +76,24 @@ const Input = (props: {
 };
 
 export const Converter = ({
-  setUsdc,
-  icy,
-  usdc,
-  setIcy,
+  tokenA,
+  tokenB,
+  setAmountTokenA,
+  setAmountTokenB,
   onChange,
+  rate,
   children,
+  addressTokenB,
+  setAddressTokenB,
 }: {
-  icy: string;
-  setIcy: (v: string) => void;
-  usdc: string;
-  setUsdc: (v: string) => void;
+  tokenA: string;
+  setAmountTokenA: (v: string) => void;
+  tokenB: string;
+  setAmountTokenB: (v: string) => void;
   onChange: (value: bigint) => void;
+  rate: number;
+  addressTokenB: string;
+  setAddressTokenB: (v: string) => void;
   children?: React.ReactNode;
 }) => {
   const requestWatch = async ({
@@ -109,19 +119,19 @@ export const Converter = ({
   };
 
   useEffect(() => {
-    if (icy.endsWith(".")) return;
-    let num = Number(icy);
+    if (tokenA.endsWith(".")) return;
+    let num = Number(tokenA);
     let diffDeci = 0;
     while (num !== 0 && !Number.isInteger(num)) {
       diffDeci += 1;
       num *= 10;
     }
-    if (icy) {
+    if (tokenA) {
       onChange(BigInt(num) * BigInt(10 ** (18 - diffDeci)));
     } else {
       onChange(BigInt(0));
     }
-  }, [icy, onChange]);
+  }, [tokenA, onChange]);
 
   return (
     <div
@@ -130,10 +140,11 @@ export const Converter = ({
       })}
     >
       <Input
-        value={icy}
+        value={tokenA}
         onChange={(v) => {
-          setIcy(v);
-          setUsdc(`${Number(v) * RATE}`);
+          if (!rate) return;
+          setAmountTokenA(v);
+          setAmountTokenB(`${Number(v) / rate}`);
         }}
         label="From"
         token={{
@@ -155,25 +166,43 @@ export const Converter = ({
         <ArrowDownIcon width={20} height={20} className="mx-auto text-white" />
       )}
       <Input
-        value={usdc}
+        value={tokenB}
         onChange={(v) => {
-          setUsdc(v);
-          setIcy(`${Number(v) / RATE}`);
+          if (!rate) return;
+          setAmountTokenB(v);
+          setAmountTokenA(`${Number(v) * rate}`);
         }}
         label="To"
         token={{
           icon: "/usdc.webp",
-          symbol: "USDC",
-          address: USDC_CONTRACT_ADDRESS,
+          symbol: "BTC",
         }}
-        onAddToken={() =>
-          requestWatch({
-            address: USDC_CONTRACT_ADDRESS,
-            symbol: "USDC",
-            decimals: 6,
-          })
-        }
       />
+      <div className="flex flex-col py-2 px-3 bg-white rounded md:py-4 md:px-5">
+        <span className="text-xs font-medium text-gray-500">
+          To BTC address
+        </span>
+        <input
+          value={addressTokenB}
+          onChange={(e) => setAddressTokenB(e.target.value)}
+          className="text-2xl mt-4 p-0 w-full bg-transparent border-none !ring-transparent focus:ring-transparent outline-none focus:outline-none text-foreground"
+        />
+      </div>
+      <Tooltip delayDuration={100}>
+        <TooltipTrigger className="flex items-center text-sm text-left text-white hover:underline">
+          <QuestionMarkCircleIcon className="mr-1 w-4 h-4" />
+          Why do I need this address
+        </TooltipTrigger>
+        <TooltipContent className="max-w-xs">
+          <p>
+            Base and Bitcoin doesn&apos;t share the same wallet address format.
+          </p>
+          <p>
+            So we can&apos;t assume sending addr == receiving addr, hence this
+            field.
+          </p>
+        </TooltipContent>
+      </Tooltip>
     </div>
   );
 };
