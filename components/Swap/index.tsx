@@ -2,7 +2,6 @@ import {
   useAccount,
   useBalance,
   useBlockNumber,
-  useSimulateContract,
   useWaitForTransactionReceipt,
   useWriteContract,
 } from "wagmi";
@@ -51,15 +50,6 @@ export const Swap = ({ rate, minIcy }: { rate: number; minIcy: number }) => {
     queryClient.invalidateQueries({ queryKey });
   }, [blockNumber, queryClient]);
 
-  const [value, setValue] = useState(BigInt(0));
-
-  // @ts-ignore
-  const { error } = useSimulateContract(getContractConfig(value));
-
-  const isOutOfMoneyError = error?.message
-    ?.toLowerCase()
-    .includes("out of money");
-
   const {
     data,
     writeContractAsync,
@@ -75,8 +65,6 @@ export const Swap = ({ rate, minIcy }: { rate: number; minIcy: number }) => {
     approve: _approve,
   } = useApproveToken(ICY_CONTRACT_ADDRESS, address, maxUint256);
 
-  const notEnoughBal = !balance || balance.value < value;
-
   const [icy, setIcy] = useState("");
   const [btc, setBtc] = useState("");
   const [btcAddress, setBtcAddress] = useState("");
@@ -84,7 +72,6 @@ export const Swap = ({ rate, minIcy }: { rate: number; minIcy: number }) => {
   const swap = useCallback(() => {
     if (!isApproved) return;
     if (!validateBtcAddr(btcAddress)) {
-      window.alert("BTC address invalid");
       return;
     }
     const icyAmount = (+icy * 10 ** 18).toLocaleString("fullwide", {
@@ -153,25 +140,26 @@ export const Swap = ({ rate, minIcy }: { rate: number; minIcy: number }) => {
           setAmountTokenB={setBtc}
           addressTokenB={btcAddress}
           setAddressTokenB={setBtcAddress}
-          onChange={setValue}
           rate={rate}
         />
       </div>
       <button
         type="button"
         className={cln("w-max mt-10 text-white px-5 py-2.5 rounded-sm", {
-          "bg-gray-400": value <= 0 || notEnoughBal || +icy < minIcy,
-          "bg-brand": value > 0,
+          "bg-gray-400":
+            +icy < minIcy || !btcAddress || !validateBtcAddr(btcAddress),
+          "bg-brand":
+            +icy >= minIcy && btcAddress && validateBtcAddr(btcAddress),
         })}
-        disabled={value <= 0 || loading || notEnoughBal || +icy < minIcy}
+        disabled={loading || +icy < minIcy || !validateBtcAddr(btcAddress)}
         onClick={!isApproved ? approve : swap}
       >
         {loading ? (
           <Spinner className="w-5 h-5" />
+        ) : !validateBtcAddr(btcAddress) ? (
+          "Invalid BTC address"
         ) : +icy < minIcy ? (
           `Min swap amount: ${minIcy} $ICY`
-        ) : !btcAddress ? (
-          "Enter BTC address"
         ) : !isApproved ? (
           "Approve"
         ) : !rate ? (
@@ -181,11 +169,11 @@ export const Swap = ({ rate, minIcy }: { rate: number; minIcy: number }) => {
         )}
       </button>
 
-      {isOutOfMoneyError ? (
-        <p className="mt-2 font-medium text-red-400">
-          Error: contract out of money
-        </p>
-      ) : null}
+      {/* {isOutOfMoneyError ? ( */}
+      {/*   <p className="mt-2 font-medium text-red-400"> */}
+      {/*     Error: contract out of money */}
+      {/*   </p> */}
+      {/* ) : null} */}
     </div>
   );
 };

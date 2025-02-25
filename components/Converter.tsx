@@ -1,7 +1,7 @@
 import { formatUnits } from "viem";
-import React, { useEffect } from "react";
+import React from "react";
 import cln from "classnames";
-import { useAccount, useBalance, useWalletClient, useWatchAsset } from "wagmi";
+import { useAccount, useBalance, useWatchAsset } from "wagmi";
 import { Tooltip, TooltipContent, TooltipTrigger } from "components/ui/tooltip";
 import Image from "next/image";
 import { address as contractAddress } from "../contract/icy";
@@ -80,7 +80,6 @@ export const Converter = ({
   tokenB,
   setAmountTokenA,
   setAmountTokenB,
-  onChange,
   rate,
   children,
   addressTokenB,
@@ -90,7 +89,6 @@ export const Converter = ({
   setAmountTokenA: (v: string) => void;
   tokenB: string;
   setAmountTokenB: (v: string) => void;
-  onChange: (value: bigint) => void;
   rate: number;
   addressTokenB: string;
   setAddressTokenB: (v: string) => void;
@@ -115,21 +113,6 @@ export const Converter = ({
       },
     });
   };
-
-  useEffect(() => {
-    if (tokenA.endsWith(".")) return;
-    let num = Number(tokenA);
-    let diffDeci = 0;
-    while (num !== 0 && !Number.isInteger(num)) {
-      diffDeci += 1;
-      num *= 10;
-    }
-    if (tokenA) {
-      onChange(BigInt(num) * BigInt(10 ** (18 - diffDeci)));
-    } else {
-      onChange(BigInt(0));
-    }
-  }, [tokenA, onChange]);
 
   return (
     <div
@@ -169,8 +152,8 @@ export const Converter = ({
         value={tokenB}
         onChange={(v) => {
           if (!rate) return;
-          setAmountTokenB(v);
-          setAmountTokenA(`${Number(v) * rate}`);
+          setAmountTokenB(Math.floor(+v).toString());
+          setAmountTokenA(`${(Number(v) * rate) / Math.pow(10, 8)}`);
         }}
         label="To"
         token={{
