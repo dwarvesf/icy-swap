@@ -23,3 +23,21 @@ export const signatureResponse = z.object({
   }),
   message: z.string(),
 });
+
+export const Tx = z.object({
+  id: z.number(),
+  icy_transaction_hash: z.string().nullable(),
+  btc_transaction_hash: z.string().nullable(),
+  swap_transaction_hash: z.string().nullable(),
+  btc_address: z.string(),
+  processed_at: z.string(), // ISO
+  amount: z.string(),
+  status: z.enum(["completed", "failed", "in_progress"]),
+  created_at: z.string(), // ISO
+  updated_at: z.string(), // ISO
+});
+export const Txns = z.object({
+  total: z.number(),
+  transactions: z.array(Tx),
+});
+export type TX = z.infer<typeof Tx>;

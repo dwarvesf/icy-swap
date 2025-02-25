@@ -7,11 +7,13 @@ import { useAccount, useSwitchChain } from "wagmi";
 import Image from "next/image";
 import cln from "classnames";
 
+const theChain = baseSepolia;
+
 export const ChainSelector = () => {
   const { chain } = useAccount();
   const { switchChain } = useSwitchChain();
 
-  const wrongChain = chain && chain.id !== baseSepolia.id;
+  const wrongChain = chain && chain.id !== theChain.id;
 
   return (
     <Listbox onChange={(id) => switchChain?.({ chainId: Number(id) })}>
@@ -34,7 +36,7 @@ export const ChainSelector = () => {
           ) : (
             <>
               <Image width={16} height={16} src="/base.webp" alt="" />
-              <p className="text-sm font-medium">Base</p>
+              <p className="text-sm font-medium">{theChain.name}</p>
             </>
           )}
           <ChevronDownIcon width={20} height={20} />
@@ -42,10 +44,10 @@ export const ChainSelector = () => {
         <Listbox.Options className="absolute left-0 top-full p-2 rounded-lg border border-gray-700 shadow translate-y-2 min-w-[200px] bg-foreground-100">
           <Listbox.Option
             className="flex items-center p-2 space-x-2 text-white rounded-lg transition-all duration-100 ease-in-out cursor-pointer hover:bg-white/5"
-            value={baseSepolia.id}
+            value={theChain.id}
           >
             <Image width={16} height={16} src="/base.webp" alt="" />
-            <p>{baseSepolia.name}</p>
+            <p>{theChain.name}</p>
           </Listbox.Option>
         </Listbox.Options>
       </div>

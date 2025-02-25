@@ -17,7 +17,7 @@ const config = createConfig(
     },
     walletConnectProjectId: "1830f624b03c2fc3d99fd758fb040ce0",
     appName: "Icy Swap",
-    appDescription: "Swap ICY to USDC",
+    appDescription: "Swap ICY to BTC",
     appUrl: "https://icy.so",
     appIcon: "https://icy.so/ICY.png",
   })

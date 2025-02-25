@@ -14,6 +14,7 @@ import {
   BASE_URL,
   ICY_CONTRACT_ADDRESS,
   ICY_SWAPPER_CONTRACT_ADDRESS,
+  MINIMUM_SWAP_AMT_ICY,
 } from "../../envs";
 import { abi as swapperABI } from "../../contract/swapper";
 import { Spinner } from "../Spinner";
@@ -22,6 +23,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { validate as validateBtcAddr } from "bitcoin-address-validation";
 import { signatureRequest, signatureResponse } from "@/schemas";
 import { useApproveToken } from "@/hooks/useApproveToken";
+import { maxUint256 } from "viem";
 
 const getContractConfig = (
   icy: BigInt,
@@ -63,7 +65,6 @@ export const Swap = ({ rate }: { rate: number }) => {
     data,
     writeContractAsync,
     isPending: confirmingSwap,
-    error: swapError,
   } = useWriteContract();
 
   const { isLoading: swapping } = useWaitForTransactionReceipt({ hash: data });
@@ -73,7 +74,7 @@ export const Swap = ({ rate }: { rate: number }) => {
     approving,
     isApproved,
     approve: _approve,
-  } = useApproveToken(ICY_CONTRACT_ADDRESS, address, value);
+  } = useApproveToken(ICY_CONTRACT_ADDRESS, address, maxUint256);
 
   const notEnoughBal = !balance || balance.value < value;
 
@@ -159,15 +160,20 @@ export const Swap = ({ rate }: { rate: number }) => {
       </div>
       <button
         type="button"
-        className={cln("w-1/2 mt-10 text-white px-5 py-2.5 rounded-sm", {
-          "bg-gray-400": value <= 0 || notEnoughBal,
+        className={cln("w-max mt-10 text-white px-5 py-2.5 rounded-sm", {
+          "bg-gray-400":
+            value <= 0 || notEnoughBal || +icy < MINIMUM_SWAP_AMT_ICY,
           "bg-brand": value > 0,
         })}
-        disabled={value <= 0 || loading || notEnoughBal}
+        disabled={
+          value <= 0 || loading || notEnoughBal || +icy < MINIMUM_SWAP_AMT_ICY
+        }
         onClick={!isApproved ? approve : swap}
       >
         {loading ? (
           <Spinner className="w-5 h-5" />
+        ) : +icy < MINIMUM_SWAP_AMT_ICY ? (
+          `Min swap amount: ${MINIMUM_SWAP_AMT_ICY} $ICY`
         ) : !isApproved ? (
           "Approve"
         ) : !rate ? (

@@ -1,7 +1,10 @@
+import { mochiui } from "@mochi-ui/theme";
+
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   darkMode: ["class"],
   content: [
+    "./node_modules/@mochi-ui/theme/dist/components/**/*.{js,jsx,ts,tsx}",
     "./app/**/*.{js,ts,jsx,tsx}",
     "./pages/**/*.{js,ts,jsx,tsx}",
     "./components/**/*.{js,ts,jsx,tsx}",
@@ -77,5 +80,9 @@ module.exports = {
       },
     },
   },
-  plugins: [require("@tailwindcss/forms"), require("tailwindcss-animate")],
+  plugins: [
+    require("@tailwindcss/forms"),
+    mochiui(),
+    require("tailwindcss-animate"),
+  ],
 };

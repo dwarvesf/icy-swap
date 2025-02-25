@@ -144,7 +144,9 @@ export const Converter = ({
         onChange={(v) => {
           if (!rate) return;
           setAmountTokenA(v);
-          setAmountTokenB(`${Number(v) / rate}`);
+          setAmountTokenB(
+            `${Math.floor((Number(v) / rate) * Math.pow(10, 8))}`
+          );
         }}
         label="From"
         token={{
@@ -174,8 +176,8 @@ export const Converter = ({
         }}
         label="To"
         token={{
-          icon: "/usdc.webp",
-          symbol: "BTC",
+          icon: "/satoshi.png",
+          symbol: "SATS",
         }}
       />
       <div className="flex flex-col py-2 px-3 bg-white rounded md:py-4 md:px-5">
@@ -189,7 +191,7 @@ export const Converter = ({
         />
       </div>
       <Tooltip delayDuration={100}>
-        <TooltipTrigger className="flex items-center text-sm text-left text-white hover:underline">
+        <TooltipTrigger className="inline-flex items-center w-max text-sm text-left text-white hover:underline">
           <QuestionMarkCircleIcon className="mr-1 w-4 h-4" />
           Why do I need this address
         </TooltipTrigger>
