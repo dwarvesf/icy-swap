@@ -14,7 +14,6 @@ import {
   BASE_URL,
   ICY_CONTRACT_ADDRESS,
   ICY_SWAPPER_CONTRACT_ADDRESS,
-  MINIMUM_SWAP_AMT_ICY,
 } from "../../envs";
 import { abi as swapperABI } from "../../contract/swapper";
 import { Spinner } from "../Spinner";
@@ -39,7 +38,7 @@ const getContractConfig = (
   args: [icy, btcAddr, btc, nonce, deadline, signature],
 });
 
-export const Swap = ({ rate }: { rate: number }) => {
+export const Swap = ({ rate, minIcy }: { rate: number; minIcy: number }) => {
   const queryClient = useQueryClient();
   const { data: blockNumber } = useBlockNumber({ watch: true });
   const { address } = useAccount();
@@ -161,19 +160,18 @@ export const Swap = ({ rate }: { rate: number }) => {
       <button
         type="button"
         className={cln("w-max mt-10 text-white px-5 py-2.5 rounded-sm", {
-          "bg-gray-400":
-            value <= 0 || notEnoughBal || +icy < MINIMUM_SWAP_AMT_ICY,
+          "bg-gray-400": value <= 0 || notEnoughBal || +icy < minIcy,
           "bg-brand": value > 0,
         })}
-        disabled={
-          value <= 0 || loading || notEnoughBal || +icy < MINIMUM_SWAP_AMT_ICY
-        }
+        disabled={value <= 0 || loading || notEnoughBal || +icy < minIcy}
         onClick={!isApproved ? approve : swap}
       >
         {loading ? (
           <Spinner className="w-5 h-5" />
-        ) : +icy < MINIMUM_SWAP_AMT_ICY ? (
-          `Min swap amount: ${MINIMUM_SWAP_AMT_ICY} $ICY`
+        ) : +icy < minIcy ? (
+          `Min swap amount: ${minIcy} $ICY`
+        ) : !btcAddress ? (
+          "Enter BTC address"
         ) : !isApproved ? (
           "Approve"
         ) : !rate ? (

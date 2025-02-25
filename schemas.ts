@@ -2,9 +2,14 @@ import { z } from "zod";
 
 export const ratioResponse = z.object({
   data: z.object({
-    decimal: z.number().nonnegative(),
-    value: z.string(),
+    circulated_icy_balance: z.string(),
+    icy_per_usd: z.string(),
+    icy_satoshi_rate: z.string(),
+    min_icy_to_swap: z.string(),
+    satoshi_balance: z.string(),
+    satoshi_per_usd: z.number(),
   }),
+  message: z.string(),
 });
 
 export const signatureRequest = z.object({

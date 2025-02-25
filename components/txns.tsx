@@ -11,6 +11,7 @@ import useSWR from "swr";
 import { Txns as TxnsSchema } from "@/schemas";
 import { Tooltip } from "@mochi-ui/core";
 import { ConnectKitButton } from "connectkit";
+import Image from "next/image";
 
 const cell = cva(
   "self-center p-2 h-full text-sm whitespace-nowrap border-b border-gray-700 flex items-center"
@@ -95,8 +96,26 @@ export default function Txns({ rate }: { rate: number }) {
         return (
           <span
             key={h}
-            className="p-2 mb-1 text-xs font-medium text-gray-500 uppercase whitespace-nowrap border-b border-gray-700"
+            className="flex gap-x-1 p-2 mb-1 text-xs font-medium text-gray-500 uppercase whitespace-nowrap border-b border-gray-700"
           >
+            {h === "icy" ? (
+              <Image
+                className="flex-shrink-0"
+                src="/ICY.png"
+                width={16}
+                height={16}
+                alt=""
+              />
+            ) : null}
+            {h === "sats" ? (
+              <Image
+                className="flex-shrink-0 p-0.5 bg-white rounded-full"
+                src="/satoshi.png"
+                width={16}
+                height={16}
+                alt=""
+              />
+            ) : null}
             {h}
           </span>
         );

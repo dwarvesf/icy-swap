@@ -6,6 +6,6 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export const fetchKeys = {
-  RATE: "/icy-btc-ratio",
+  SWAP_INFO: "/swap/info",
   TXNS: "/transactions",
 };

@@ -1,7 +1,7 @@
 import { formatUnits } from "viem";
 import React, { useEffect } from "react";
 import cln from "classnames";
-import { useAccount, useBalance } from "wagmi";
+import { useAccount, useBalance, useWalletClient, useWatchAsset } from "wagmi";
 import { Tooltip, TooltipContent, TooltipTrigger } from "components/ui/tooltip";
 import Image from "next/image";
 import { address as contractAddress } from "../contract/icy";
@@ -96,6 +96,7 @@ export const Converter = ({
   setAddressTokenB: (v: string) => void;
   children?: React.ReactNode;
 }) => {
+  const { watchAsset } = useWatchAsset();
   const requestWatch = async ({
     address,
     symbol,
@@ -105,15 +106,12 @@ export const Converter = ({
     symbol: string;
     decimals: number;
   }) => {
-    await window.ethereum?.request({
-      method: "wallet_watchAsset",
-      params: {
-        type: "ERC20",
-        options: {
-          address,
-          symbol,
-          decimals,
-        },
+    watchAsset({
+      type: "ERC20",
+      options: {
+        address,
+        symbol,
+        decimals,
       },
     });
   };

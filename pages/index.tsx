@@ -10,16 +10,18 @@ import { ratioResponse } from "@/schemas";
 import Txns from "@/components/txns";
 import useSWR from "swr";
 import { fetchKeys } from "@/lib/utils";
+import { Tooltip } from "@mochi-ui/core";
 
-const icyAmt = 200;
+const icyAmt = 1;
 
 export default function Home() {
-  const { data } = useSWR(fetchKeys.RATE, () =>
-    fetch(`${BASE_URL}/oracle/icy-btc-ratio`)
+  const { data } = useSWR(fetchKeys.SWAP_INFO, () =>
+    fetch(`${BASE_URL}/swap/info`)
       .then((res) => res.json())
       .then((res) => ratioResponse.parse(res))
   );
-  const rate = data ? +data.data.value / Math.pow(10, data.data.decimal) : 0;
+  const rate = data ? +data.data.icy_satoshi_rate / Math.pow(10, 8) : 0;
+  const satoshis = rate ? Math.floor((icyAmt / rate) * Math.pow(10, 8)) : 0;
 
   return (
     <div>
@@ -65,14 +67,36 @@ export default function Home() {
                   <br />
                   <span className="text-brand">Dwarves Network</span>
                 </p>
-                <p className="mt-1 text-lg">
+                <p className="mt-1 mb-10 text-lg">
                   A mix between an open company &amp; a community
                 </p>
-                <p className="mt-10 text-lg font-medium">
-                  {icyAmt} $ICY ≈{" "}
-                  {rate ? Math.floor((icyAmt / rate) * Math.pow(10, 8)) : 0}{" "}
-                  Satoshis (? USD)
-                </p>
+                <Tooltip
+                  arrow="bottom-end"
+                  content={
+                    <div className="grid auto-rows-auto gap-x-2 text-sm font-normal grid-cols-[max-content_max-content]">
+                      <span className="text-gray-400">Current ICY:</span>
+                      <span className="text-right">
+                        {(
+                          +(data?.data.circulated_icy_balance ?? 0) /
+                          Math.pow(10, 18)
+                        ).toFixed(0)}
+                      </span>
+                      <span className="text-gray-400">Current BTC:</span>
+                      <span className="text-right">
+                        {+(data?.data.satoshi_balance ?? 0) / Math.pow(10, 8)}
+                      </span>
+                    </div>
+                  }
+                >
+                  <p className="text-lg font-medium">
+                    {icyAmt} $ICY ≈ {satoshis} Satoshi (
+                    {(
+                      (satoshis * (data?.data.satoshi_per_usd ?? 0)) /
+                      Math.pow(10, 6)
+                    ).toFixed(2)}{" "}
+                    USD)
+                  </p>
+                </Tooltip>
                 <div className="my-3 w-10 h-px bg-gray-600" />
                 <ul className="flex flex-col gap-2 -ml-1">
                   <li className="flex gap-1 items-center">
@@ -108,7 +132,10 @@ export default function Home() {
               </div>
               <div className="flex flex-col flex-shrink-0 order-1 md:order-none">
                 <div className="hidden mb-5 w-16 h-16 md:block" />
-                <Swap rate={rate ?? 0} />
+                <Swap
+                  rate={rate ?? 0}
+                  minIcy={+(data?.data.min_icy_to_swap ?? 0)}
+                />
               </div>
               <div className="flex flex-col order-2 w-full md:order-none md:mt-10 basis-full">
                 <span className="px-2 mb-5 text-xl">
