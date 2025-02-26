@@ -22,6 +22,8 @@ import { validate as validateBtcAddr } from "bitcoin-address-validation";
 import { signatureRequest, signatureResponse } from "@/schemas";
 import { useApproveToken } from "@/hooks/useApproveToken";
 import { maxUint256 } from "viem";
+import { mutate } from "swr";
+import { fetchKeys } from "@/lib/utils";
 
 const getContractConfig = (
   icy: BigInt,
@@ -120,6 +122,10 @@ export const Swap = ({ rate, minIcy }: { rate: number; minIcy: number }) => {
             setIcy("");
             setBtc("");
             toast.success("Success", { position: "bottom-center" });
+
+            // revalidate txns data
+            mutate([fetchKeys.TXNS, true, address]);
+            mutate([fetchKeys.TXNS, false, address]);
           })
           .catch((e) => {
             console.error(e);
