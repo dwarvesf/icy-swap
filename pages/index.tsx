@@ -134,13 +134,10 @@ export default function Home() {
                 <div className="hidden mb-5 w-16 h-16 md:block" />
                 <Swap
                   rate={rate ?? 0}
-                  minIcy={+(data?.data.min_icy_to_swap ?? 0)}
+                  minIcy={+(data?.data.min_icy_to_swap ?? 0) / Math.pow(10, 18)}
                 />
               </div>
               <div className="flex flex-col order-2 w-full md:order-none md:mt-10 basis-full">
-                <span className="px-2 mb-5 text-xl">
-                  Your recent transactions
-                </span>
                 <Txns rate={rate ?? 0} />
               </div>
             </div>

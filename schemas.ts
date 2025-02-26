@@ -3,11 +3,14 @@ import { z } from "zod";
 export const ratioResponse = z.object({
   data: z.object({
     circulated_icy_balance: z.string(),
-    icy_per_usd: z.string(),
     icy_satoshi_rate: z.string(),
-    min_icy_to_swap: z.string(),
+    icy_usd_rate: z.string(),
+
     satoshi_balance: z.string(),
     satoshi_per_usd: z.number(),
+    satoshi_usd_rate: z.string(),
+
+    min_icy_to_swap: z.string(),
   }),
   message: z.string(),
 });
@@ -35,11 +38,23 @@ export const Tx = z.object({
   btc_transaction_hash: z.string().nullable(),
   swap_transaction_hash: z.string().nullable(),
   btc_address: z.string(),
-  processed_at: z.string(), // ISO
+  processed_at: z.string().nullable(), // ISO
   amount: z.string(),
-  status: z.enum(["completed", "failed", "in_progress"]),
+  status: z.enum(["completed", "failed", "pending"]),
+  icy_swap_tx: z.object({
+    transaction_hash: z.string(),
+    block_number: z.number(),
+    icy_amount: z.string(),
+    from_address: z.string(),
+    btc_address: z.string(),
+    btc_amount: z.string(),
+    created_at: z.string(),
+    updated_at: z.string(),
+  }),
   created_at: z.string(), // ISO
   updated_at: z.string(), // ISO
+  network_fee: z.string(),
+  total_amount: z.string(),
 });
 export const Txns = z.object({
   total: z.number(),

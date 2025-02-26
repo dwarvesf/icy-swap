@@ -41,10 +41,11 @@ export const Swap = ({ rate, minIcy }: { rate: number; minIcy: number }) => {
   const queryClient = useQueryClient();
   const { data: blockNumber } = useBlockNumber({ watch: true });
   const { address } = useAccount();
-  const { data: balance, queryKey } = useBalance({
+  const { queryKey } = useBalance({
     token: ICY_CONTRACT_ADDRESS,
     address,
   });
+  const [generatingSignature, setGeneratingSignature] = useState(false);
 
   useEffect(() => {
     queryClient.invalidateQueries({ queryKey });
@@ -79,11 +80,15 @@ export const Swap = ({ rate, minIcy }: { rate: number; minIcy: number }) => {
       maximumFractionDigits: 18,
       notation: "standard",
     });
-    const btcAmount = Math.floor(+btc * 10 ** 8).toString();
+    const btcAmount = btc;
     if (+btcAmount < 1) {
       window.alert("Invalid BTC amount");
       return;
     }
+    setGeneratingSignature(true);
+    toast("Swapping...", {
+      position: "bottom-center",
+    });
     fetch(`${BASE_URL}/swap/generate-signature`, {
       method: "POST",
       headers: {
@@ -111,16 +116,17 @@ export const Swap = ({ rate, minIcy }: { rate: number; minIcy: number }) => {
             `0x${data.signature}`
           )
         )
-          .then((data: any) => data.wait())
           .then(async () => {
             setIcy("");
             setBtc("");
             toast.success("Success", { position: "bottom-center" });
           })
-          .catch(() => null);
-        toast("Swapping...", {
-          position: "bottom-center",
-        });
+          .catch((e) => {
+            console.error(e);
+          })
+          .finally(() => {
+            setGeneratingSignature(false);
+          });
       });
   }, [icy, btc, btcAddress, isApproved, writeContractAsync]);
 
@@ -128,7 +134,12 @@ export const Swap = ({ rate, minIcy }: { rate: number; minIcy: number }) => {
     _approve?.();
   };
 
-  const loading = confirmingSwap || swapping || confirmingApprove || approving;
+  const loading =
+    generatingSignature ||
+    confirmingSwap ||
+    swapping ||
+    confirmingApprove ||
+    approving;
 
   return (
     <div className="flex flex-col justify-center items-center">
