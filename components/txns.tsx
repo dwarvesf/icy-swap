@@ -206,7 +206,7 @@ export default function Txns({ rate }: { rate: number }) {
               />
               <Address
                 display={tx.btc_transaction_hash}
-                value={`${BTC_EXPLORER}/tx/${tx.btc_address}`}
+                value={`${BTC_EXPLORER}/tx/${tx.btc_transaction_hash}`}
               />
               <Status value={tx.status} />
             </React.Fragment>
