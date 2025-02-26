@@ -9,7 +9,7 @@ import { BASE_URL } from "../envs";
 import { ratioResponse } from "@/schemas";
 import Txns from "@/components/txns";
 import useSWR from "swr";
-import { fetchKeys } from "@/lib/utils";
+import { commify, fetchKeys } from "@/lib/utils";
 import { Tooltip } from "@mochi-ui/core";
 
 const icyAmt = 1;
@@ -89,11 +89,13 @@ export default function Home() {
                   }
                 >
                   <p className="text-lg font-medium">
-                    {icyAmt} $ICY ≈ {satoshis} Satoshi (
-                    {(
-                      (satoshis * (data?.data.satoshi_per_usd ?? 0)) /
-                      Math.pow(10, 6)
-                    ).toFixed(2)}{" "}
+                    {icyAmt} $ICY ≈ {commify(satoshis)} Satoshi (
+                    {commify(
+                      (
+                        (satoshis * (data?.data.satoshi_per_usd ?? 0)) /
+                        Math.pow(10, 6)
+                      ).toFixed(2)
+                    )}{" "}
                     USD)
                   </p>
                 </Tooltip>

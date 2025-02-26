@@ -134,7 +134,7 @@ export const Swap = ({ rate, minIcy }: { rate: number; minIcy: number }) => {
             setGeneratingSignature(false);
           });
       });
-  }, [icy, btc, btcAddress, isApproved, writeContractAsync]);
+  }, [icy, btc, btcAddress, isApproved, writeContractAsync, address]);
 
   const approve = () => {
     _approve?.();

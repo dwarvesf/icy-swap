@@ -172,23 +172,26 @@ export default function Txns({ rate }: { rate: number }) {
                     <div className="grid auto-rows-auto text-sm font-normal grid-cols-[max-content_max-content]">
                       <span className="text-gray-400">Rate:</span>
                       <span className="text-right">
-                        1 ICY ≈ {Math.floor((1 / rate) * Math.pow(10, 8))} SATS
+                        1 ICY ≈{" "}
+                        {commify(Math.floor((1 / rate) * Math.pow(10, 8)))} SATS
                       </span>
                       <span className="text-gray-400">Amount:</span>
-                      <span className="text-right">{tx.amount} SATS</span>
+                      <span className="text-right">
+                        {commify(tx.amount)} SATS
+                      </span>
                       <span className="pb-1 text-gray-400 border-b border-gray-300">
                         Service Fee
                       </span>
                       <span className="pb-1 text-right border-b border-gray-300">
                         {tx.status === "pending"
                           ? "Pending"
-                          : `-${tx.network_fee} SATS`}
+                          : `-${commify(tx.network_fee)} SATS`}
                       </span>
                       <span className="py-1 text-white">Final Amount:</span>
                       <span className="py-1 text-right text-white">
                         {tx.status === "pending"
                           ? "Pending"
-                          : `${tx.total_amount} SATS`}
+                          : `${commify(tx.total_amount)} SATS`}
                       </span>
                     </div>
                   }
