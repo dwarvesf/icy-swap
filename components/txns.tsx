@@ -1,12 +1,7 @@
 import { BASE_URL, BTC_EXPLORER } from "@/envs";
 import { isSSR, truncate } from "@dwarvesf/react-utils";
-import {
-  CheckIcon,
-  ClipboardIcon,
-  LinkIcon,
-} from "@heroicons/react/24/outline";
+import { LinkIcon } from "@heroicons/react/24/outline";
 import { format } from "date-fns";
-import { useClipboard } from "@dwarvesf/react-hooks";
 import React, { useMemo, useState } from "react";
 import { useAccount } from "wagmi";
 import { VariantProps, cva } from "class-variance-authority";
@@ -119,7 +114,7 @@ export default function Txns({ rate }: { rate: number }) {
   return (
     <div className="flex flex-col h-[450px]">
       <div className="flex justify-between mb-1">
-        <span className="text-xl">Your recent transactions</span>
+        <span className="text-xl">Recent transactions</span>
         {button}
       </div>
 
