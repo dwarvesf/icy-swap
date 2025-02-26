@@ -115,7 +115,7 @@ export default function Home() {
                       >
                         memo.d.foundation
                       </a>{" "}
-                      to see what&apos; on our radars.
+                      to see what&apos;s on our radars.
                     </p>
                   </li>
                   <li className="flex gap-1 items-center">
