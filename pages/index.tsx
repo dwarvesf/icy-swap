@@ -76,14 +76,16 @@ export default function Home() {
                     <div className="grid auto-rows-auto gap-x-2 text-sm font-normal grid-cols-[max-content_max-content]">
                       <span className="text-gray-400">Current ICY:</span>
                       <span className="text-right">
-                        {(
-                          +(data?.data.circulated_icy_balance ?? 0) /
-                          Math.pow(10, 18)
-                        ).toFixed(0)}
+                        {commify(
+                          (
+                            +(data?.data.circulated_icy_balance ?? 0) /
+                            Math.pow(10, 18)
+                          ).toFixed(0)
+                        )}
                       </span>
                       <span className="text-gray-400">Current Sats:</span>
                       <span className="text-right">
-                        {+(data?.data.satoshi_balance ?? 0) / Math.pow(10, 8)}
+                        {commify(+(data?.data.satoshi_balance ?? 0))}
                       </span>
                     </div>
                   }
