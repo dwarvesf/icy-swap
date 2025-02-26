@@ -54,6 +54,7 @@ export const Tx = z.object({
   created_at: z.string(), // ISO
   updated_at: z.string(), // ISO
   network_fee: z.string(),
+  service_fee: z.string(),
   total_amount: z.string(),
 });
 export const Txns = z.object({

@@ -186,7 +186,7 @@ export default function Txns({ rate }: { rate: number }) {
                       <span className="pb-1 text-right border-b border-gray-300">
                         {tx.status === "pending"
                           ? "Pending"
-                          : `-${commify(tx.network_fee)} SATS`}
+                          : `-${commify(tx.service_fee)} SATS`}
                       </span>
                       <span className="py-1 text-white">Final Amount:</span>
                       <span className="py-1 text-right text-white">
