@@ -1,9 +1,13 @@
 import { BASE_URL, BTC_EXPLORER } from "@/envs";
 import { isSSR, truncate } from "@dwarvesf/react-utils";
-import { CheckIcon, ClipboardIcon } from "@heroicons/react/24/outline";
+import {
+  CheckIcon,
+  ClipboardIcon,
+  LinkIcon,
+} from "@heroicons/react/24/outline";
 import { format } from "date-fns";
 import { useClipboard } from "@dwarvesf/react-hooks";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { useAccount } from "wagmi";
 import { VariantProps, cva } from "class-variance-authority";
 import { cn, commify, fetchKeys } from "@/lib/utils";
@@ -37,21 +41,17 @@ function Address({
   value: string | null;
   display?: string | null;
 }) {
-  const { hasCopied, onCopy } = useClipboard(value || "");
-  if (!value) return <span className={cell()}>⎯</span>;
+  if (!value || !display) return <span className={cell()}>⎯</span>;
   return (
-    <button
-      type="button"
-      onClick={onCopy}
+    <a
+      href={value}
+      rel="noreferrer"
+      target="_blank"
       className={cell({ className: "flex gap-x-1 cursor-pointer" })}
     >
       <span className="font-mono">{truncate(display ?? "", 8, true)}</span>
-      {display && hasCopied ? (
-        <CheckIcon className="w-4 h-4" />
-      ) : display ? (
-        <ClipboardIcon className="w-4 h-4" />
-      ) : null}
-    </button>
+      <LinkIcon className="w-3.5 h-3.5" />
+    </a>
   );
 }
 
@@ -70,12 +70,11 @@ function Status({ value }: { value: VariantProps<typeof status>["state"] }) {
 
 export default function Txns({ rate }: { rate: number }) {
   const { isConnected, address, chain } = useAccount();
-  const [viewSelfTxs, setViewSelfTxs] = useState(true);
+  const [viewSelfTxs, setViewSelfTxs] = useState(false);
   const { data: txns, error } = useSWR(
     [fetchKeys.TXNS, viewSelfTxs, address],
     async (keys) => {
       const [, viewSelf, address] = keys;
-      if (!address) return [];
       return fetch(
         `${BASE_URL}/transactions${!viewSelf ? "" : `?evm_address=${address}`}`
       )
@@ -88,33 +87,40 @@ export default function Txns({ rate }: { rate: number }) {
     console.error(error);
   }
 
+  const button = useMemo(() => {
+    if (isSSR()) return null;
+    if (isConnected)
+      return (
+        <button
+          type="button"
+          onClick={() => setViewSelfTxs((o) => !o)}
+          className="p-0 text-sm text-gray-500 hover:underline"
+        >
+          {viewSelfTxs ? "View all" : "View own txs"}
+        </button>
+      );
+    return (
+      <ConnectKitButton.Custom>
+        {({ show }) => {
+          return (
+            <button
+              onClick={show}
+              type="button"
+              className="p-0 text-sm text-gray-500 hover:underline"
+            >
+              Connect wallet to view your own txs
+            </button>
+          );
+        }}
+      </ConnectKitButton.Custom>
+    );
+  }, [isConnected, viewSelfTxs]);
+
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col h-[450px]">
       <div className="flex justify-between mb-1">
         <span className="text-xl">Your recent transactions</span>
-        {isConnected || isSSR() ? (
-          <button
-            type="button"
-            onClick={() => setViewSelfTxs((o) => !o)}
-            className="p-0 text-sm text-gray-500 hover:underline"
-          >
-            {viewSelfTxs ? "View all" : "View own txs"}
-          </button>
-        ) : (
-          <ConnectKitButton.Custom>
-            {({ show }) => {
-              return (
-                <button
-                  onClick={show}
-                  type="button"
-                  className="p-0 text-sm text-gray-500 hover:underline"
-                >
-                  Connect wallet to view your own txs
-                </button>
-              );
-            }}
-          </ConnectKitButton.Custom>
-        )}
+        {button}
       </div>
 
       <div className="grid overflow-y-auto auto-rows-auto w-full grid-cols-[repeat(3,max-content)_1fr_1fr_1fr_max-content] scrollbar-hide">

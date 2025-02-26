@@ -55,7 +55,7 @@ export default function Home() {
       <TooltipProvider>
         <main>
           <div className="flex relative flex-col items-center w-screen min-h-screen text-white bg-foreground">
-            <div className="flex z-40 gap-4 pb-10 mx-auto mt-5 mb-auto md:justify-end md:pb-0 md:mr-5 md:ml-auto">
+            <div className="flex z-40 gap-4 pb-10 mx-auto mt-5 mb-auto h-10 md:justify-end md:pb-0 md:mr-5 md:ml-auto">
               <ChainSelector />
               <ConnectKitButton />
             </div>
@@ -81,7 +81,7 @@ export default function Home() {
                           Math.pow(10, 18)
                         ).toFixed(0)}
                       </span>
-                      <span className="text-gray-400">Current BTC:</span>
+                      <span className="text-gray-400">Current Sats:</span>
                       <span className="text-right">
                         {+(data?.data.satoshi_balance ?? 0) / Math.pow(10, 8)}
                       </span>
@@ -111,9 +111,9 @@ export default function Home() {
                         target="_blank"
                         className="text-brand"
                       >
-                        earn.d.foundation
+                        memo.d.foundation
                       </a>{" "}
-                      to see available quests and r&d topics.
+                      to see what&apos; on our radars.
                     </p>
                   </li>
                   <li className="flex gap-1 items-center">

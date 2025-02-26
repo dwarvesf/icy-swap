@@ -23,10 +23,10 @@ const Input = (props: {
     address,
   });
 
-  const formatted = formatUnits(
+  const formatted = (+formatUnits(
     balance?.value ?? BigInt(0),
     balance?.decimals ?? 0
-  );
+  )).toFixed(2);
 
   const symbol = balance?.symbol ? `$${balance.symbol}` : "";
 
