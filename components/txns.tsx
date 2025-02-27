@@ -197,7 +197,7 @@ export default function Txns({ rate }: { rate: number }) {
                     </div>
                   }
                 >
-                  {commify(tx.subtotal)}
+                  {commify(tx.total_amount)}
                 </Tooltip>
               </span>
               <Address
