@@ -225,22 +225,15 @@ export const Converter = ({
           <ModalOverlay />
           <ModalContent className="!p-5 max-w-sm overflow-hidden">
             <div className="flex relative flex-col">
-              <div className="overflow-hidden absolute bottom-2 -right-7 rounded-full">
-                <div className="relative">
-                  <div className="text-9xl scale-[1.25]">🫶🏻</div>
-                  <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle,transparent_-100%,white_100%)]" />
-                </div>
-              </div>
               <ModalTitle className="relative">About service fee</ModalTitle>
               <ModalDescription className="flex relative flex-col gap-y-2 mt-5">
                 <span className="font-medium">
-                  When you&apos;re swapping, a cross chain transaction is
-                  committed (Base → Bitcoin)
+                  You&apos;re sending fund to a Bitcoin wallet
                 </span>
                 <span>
-                  So we need to process that transaction with{" "}
-                  <span className="underline">extra care</span> to make sure it
-                  will go through, hence the service fee.
+                  Exchange to Bitcoin addresses can only be done through
+                  on-chain transfer, which will be sent on blockchain, which
+                  network fees charged.
                 </span>
               </ModalDescription>
               <ModalTrigger asChild className="relative">
