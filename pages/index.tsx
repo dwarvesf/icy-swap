@@ -138,6 +138,7 @@ export default function Home() {
                 rate={rate ?? 0}
                 minIcy={+(data?.data.min_icy_to_swap ?? 0) / Math.pow(10, 18)}
                 feeRate={data?.data.service_fee_rate ?? 0}
+                minSats={data?.data.min_satoshi_fee ?? ""}
               />
             </div>
             <div className="flex flex-col order-2 w-full md:order-none md:mt-10 basis-full">

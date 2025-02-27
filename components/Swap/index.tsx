@@ -43,10 +43,12 @@ export const Swap = ({
   rate,
   minIcy,
   feeRate,
+  minSats,
 }: {
   rate: number;
   minIcy: number;
   feeRate: number;
+  minSats: string;
 }) => {
   const queryClient = useQueryClient();
   const { data: blockNumber } = useBlockNumber({ watch: true });
@@ -167,6 +169,7 @@ export const Swap = ({
           setAddressTokenB={setBtcAddress}
           rate={rate}
           feeRate={feeRate}
+          minSats={minSats}
         />
       </div>
       <button
