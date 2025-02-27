@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const ratioResponse = z.object({
+export const infoResponse = z.object({
   data: z.object({
     circulated_icy_balance: z.string(),
     icy_satoshi_rate: z.string(),
@@ -9,8 +9,10 @@ export const ratioResponse = z.object({
     satoshi_balance: z.string(),
     satoshi_per_usd: z.number(),
     satoshi_usd_rate: z.string(),
+    min_satoshi_fee: z.string(),
 
     min_icy_to_swap: z.string(),
+    service_fee_rate: z.number(),
   }),
   message: z.string(),
 });
@@ -39,7 +41,7 @@ export const Tx = z.object({
   swap_transaction_hash: z.string().nullable(),
   btc_address: z.string(),
   processed_at: z.string().nullable(), // ISO
-  amount: z.string(),
+  subtotal: z.string(),
   status: z.enum(["completed", "failed", "pending"]),
   icy_swap_tx: z.object({
     transaction_hash: z.string(),

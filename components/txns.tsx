@@ -178,7 +178,7 @@ export default function Txns({ rate }: { rate: number }) {
                       </span>
                       <span className="text-gray-400">Amount:</span>
                       <span className="text-right">
-                        {commify(tx.amount)} SATS
+                        {commify(tx.subtotal)} SATS
                       </span>
                       <span className="pb-1 text-gray-400 border-b border-gray-300">
                         Service Fee
@@ -197,7 +197,7 @@ export default function Txns({ rate }: { rate: number }) {
                     </div>
                   }
                 >
-                  {commify(tx.amount)}
+                  {commify(tx.subtotal)}
                 </Tooltip>
               </span>
               <Address

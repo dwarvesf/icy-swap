@@ -39,7 +39,15 @@ const getContractConfig = (
   args: [icy, btcAddr, btc, nonce, deadline, signature],
 });
 
-export const Swap = ({ rate, minIcy }: { rate: number; minIcy: number }) => {
+export const Swap = ({
+  rate,
+  minIcy,
+  feeRate,
+}: {
+  rate: number;
+  minIcy: number;
+  feeRate: number;
+}) => {
   const queryClient = useQueryClient();
   const { data: blockNumber } = useBlockNumber({ watch: true });
   const { address } = useAccount();
@@ -158,6 +166,7 @@ export const Swap = ({ rate, minIcy }: { rate: number; minIcy: number }) => {
           addressTokenB={btcAddress}
           setAddressTokenB={setBtcAddress}
           rate={rate}
+          feeRate={feeRate}
         />
       </div>
       <button
