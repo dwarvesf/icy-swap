@@ -181,23 +181,21 @@ export default function Txns({ rate }: { rate: number }) {
                         {commify(tx.subtotal)} SATS
                       </span>
                       <span className="pb-1 text-gray-400 border-b border-gray-300">
-                        Service Fee
+                        Service Fee:
                       </span>
                       <span className="pb-1 text-right border-b border-gray-300">
-                        {tx.status === "pending"
-                          ? "Pending"
-                          : `-${commify(tx.service_fee)} SATS`}
+                        {tx.status === "pending" ? "Pending" : (Number(tx.service_fee) > 0 ? `-${commify(tx.service_fee)} SATS` : `0 SATS`)}
                       </span>
                       <span className="py-1 text-white">Final Amount:</span>
                       <span className="py-1 text-right text-white">
                         {tx.status === "pending"
                           ? "Pending"
-                          : `${commify(tx.total_amount)} SATS`}
+                          : `${commify(tx.total)} SATS`}
                       </span>
                     </div>
                   }
                 >
-                  {commify(tx.total_amount)}
+                  {commify(tx.total)}
                 </Tooltip>
               </span>
               <Address
