@@ -3,12 +3,13 @@ import "@fontsource/ibm-plex-sans/500.css";
 import "@fontsource/ibm-plex-sans/700.css";
 import "../styles/globals.css";
 import { WagmiProvider, http, createConfig } from "wagmi";
-import { base } from "wagmi/chains";
+import { base, baseSepolia } from "wagmi/chains";
 import { ConnectKitProvider, getDefaultConfig } from "connectkit";
 import { Toaster } from "react-hot-toast";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
-const theChain = base;
+// TODO: chain
+const theChain = baseSepolia;
 
 const config = createConfig(
   // @ts-ignore

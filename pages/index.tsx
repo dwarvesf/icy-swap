@@ -19,8 +19,8 @@ export default function Home() {
       .then((res) => res.json())
       .then((res) => infoResponse.parse(res))
   );
-  const rate = data ? +data.data.icy_satoshi_rate / Math.pow(10, 8) : 0;
-  const satoshis = rate ? Math.floor((icyAmt / rate) * Math.pow(10, 8)) : 0;
+  const rate = data ? +data.data.icy_satoshi_rate : 0;
+  const satoshis = rate ? Math.floor(icyAmt * rate) : 0;
 
   return (
     <div>
@@ -94,7 +94,7 @@ export default function Home() {
                     (
                       (satoshis * (data?.data.satoshi_per_usd ?? 0)) /
                       Math.pow(10, 6)
-                    ).toFixed(2)
+                    ).toFixed(5)
                   )}{" "}
                   USD)
                 </p>

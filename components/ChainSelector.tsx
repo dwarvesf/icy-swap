@@ -2,12 +2,13 @@ import React from "react";
 import { Listbox } from "@headlessui/react";
 import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
-import { base } from "wagmi/chains";
+import { base, baseSepolia } from "wagmi/chains";
 import { useAccount, useSwitchChain } from "wagmi";
 import Image from "next/image";
 import cln from "classnames";
 
-const theChain = base;
+// TODO: chain
+const theChain = baseSepolia;
 
 export const ChainSelector = () => {
   const { chain } = useAccount();

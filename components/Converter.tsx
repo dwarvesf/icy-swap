@@ -142,9 +142,7 @@ export const Converter = ({
         onChange={(v) => {
           if (!rate) return;
           setAmountTokenA(v);
-          setAmountTokenB(
-            `${Math.floor((Number(v) / rate) * Math.pow(10, 8))}`
-          );
+          setAmountTokenB(`${Math.floor(Number(v) * rate)}`);
         }}
         label="From"
         token={{
@@ -170,7 +168,7 @@ export const Converter = ({
         onChange={(v) => {
           if (!rate) return;
           setAmountTokenB(Math.floor(+v).toString());
-          setAmountTokenA(`${(Number(v) * rate) / Math.pow(10, 8)}`);
+          setAmountTokenA(`${Number(v) / rate}`);
         }}
         label="To"
         token={{
