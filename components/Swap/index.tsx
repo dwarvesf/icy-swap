@@ -2,7 +2,6 @@ import {
   useAccount,
   useBalance,
   useBlockNumber,
-  useSimulateContract,
   useWaitForTransactionReceipt,
   useWriteContract,
 } from "wagmi";
@@ -22,6 +21,9 @@ import { useQueryClient } from "@tanstack/react-query";
 import { validate as validateBtcAddr } from "bitcoin-address-validation";
 import { signatureRequest, signatureResponse } from "@/schemas";
 import { useApproveToken } from "@/hooks/useApproveToken";
+import { maxUint256 } from "viem";
+import { mutate } from "swr";
+import { fetchKeys } from "@/lib/utils";
 
 const getContractConfig = (
   icy: BigInt,
@@ -37,33 +39,34 @@ const getContractConfig = (
   args: [icy, btcAddr, btc, nonce, deadline, signature],
 });
 
-export const Swap = ({ rate }: { rate: number }) => {
+export const Swap = ({
+  rate,
+  minIcy,
+  feeRate,
+  minSats,
+}: {
+  rate: number;
+  minIcy: number;
+  feeRate: number;
+  minSats: string;
+}) => {
   const queryClient = useQueryClient();
   const { data: blockNumber } = useBlockNumber({ watch: true });
   const { address } = useAccount();
-  const { data: balance, queryKey } = useBalance({
+  const { queryKey } = useBalance({
     token: ICY_CONTRACT_ADDRESS,
     address,
   });
+  const [generatingSignature, setGeneratingSignature] = useState(false);
 
   useEffect(() => {
     queryClient.invalidateQueries({ queryKey });
   }, [blockNumber, queryClient]);
 
-  const [value, setValue] = useState(BigInt(0));
-
-  // @ts-ignore
-  const { error } = useSimulateContract(getContractConfig(value));
-
-  const isOutOfMoneyError = error?.message
-    ?.toLowerCase()
-    .includes("out of money");
-
   const {
     data,
     writeContractAsync,
     isPending: confirmingSwap,
-    error: swapError,
   } = useWriteContract();
 
   const { isLoading: swapping } = useWaitForTransactionReceipt({ hash: data });
@@ -73,9 +76,7 @@ export const Swap = ({ rate }: { rate: number }) => {
     approving,
     isApproved,
     approve: _approve,
-  } = useApproveToken(ICY_CONTRACT_ADDRESS, address, value);
-
-  const notEnoughBal = !balance || balance.value < value;
+  } = useApproveToken(ICY_CONTRACT_ADDRESS, address, maxUint256);
 
   const [icy, setIcy] = useState("");
   const [btc, setBtc] = useState("");
@@ -84,7 +85,6 @@ export const Swap = ({ rate }: { rate: number }) => {
   const swap = useCallback(() => {
     if (!isApproved) return;
     if (!validateBtcAddr(btcAddress)) {
-      window.alert("BTC address invalid");
       return;
     }
     const icyAmount = (+icy * 10 ** 18).toLocaleString("fullwide", {
@@ -92,11 +92,15 @@ export const Swap = ({ rate }: { rate: number }) => {
       maximumFractionDigits: 18,
       notation: "standard",
     });
-    const btcAmount = Math.floor(+btc * 10 ** 8).toString();
+    const btcAmount = btc;
     if (+btcAmount < 1) {
       window.alert("Invalid BTC amount");
       return;
     }
+    setGeneratingSignature(true);
+    toast("Swapping...", {
+      position: "bottom-center",
+    });
     fetch(`${BASE_URL}/swap/generate-signature`, {
       method: "POST",
       headers: {
@@ -124,24 +128,34 @@ export const Swap = ({ rate }: { rate: number }) => {
             `0x${data.signature}`
           )
         )
-          .then((data: any) => data.wait())
           .then(async () => {
             setIcy("");
             setBtc("");
             toast.success("Success", { position: "bottom-center" });
+
+            // revalidate txns data
+            mutate([fetchKeys.TXNS, true, address]);
+            mutate([fetchKeys.TXNS, false, address]);
           })
-          .catch(() => null);
-        toast("Swapping...", {
-          position: "bottom-center",
-        });
+          .catch((e) => {
+            console.error(e);
+          })
+          .finally(() => {
+            setGeneratingSignature(false);
+          });
       });
-  }, [icy, btc, btcAddress, isApproved, writeContractAsync]);
+  }, [icy, btc, btcAddress, isApproved, writeContractAsync, address]);
 
   const approve = () => {
     _approve?.();
   };
 
-  const loading = confirmingSwap || swapping || confirmingApprove || approving;
+  const loading =
+    generatingSignature ||
+    confirmingSwap ||
+    swapping ||
+    confirmingApprove ||
+    approving;
 
   return (
     <div className="flex flex-col justify-center items-center">
@@ -153,21 +167,28 @@ export const Swap = ({ rate }: { rate: number }) => {
           setAmountTokenB={setBtc}
           addressTokenB={btcAddress}
           setAddressTokenB={setBtcAddress}
-          onChange={setValue}
           rate={rate}
+          feeRate={feeRate}
+          minSats={minSats}
         />
       </div>
       <button
         type="button"
-        className={cln("w-1/2 mt-10 text-white px-5 py-2.5 rounded-sm", {
-          "bg-gray-400": value <= 0 || notEnoughBal,
-          "bg-brand": value > 0,
+        className={cln("w-max mt-10 text-white px-5 py-2.5 rounded-sm", {
+          "bg-gray-400":
+            +icy < minIcy || !btcAddress || !validateBtcAddr(btcAddress),
+          "bg-brand":
+            +icy >= minIcy && btcAddress && validateBtcAddr(btcAddress),
         })}
-        disabled={value <= 0 || loading || notEnoughBal}
+        disabled={loading || +icy < minIcy || !validateBtcAddr(btcAddress)}
         onClick={!isApproved ? approve : swap}
       >
         {loading ? (
           <Spinner className="w-5 h-5" />
+        ) : !validateBtcAddr(btcAddress) ? (
+          "Invalid BTC address"
+        ) : +icy < minIcy ? (
+          `Min swap amount: ${minIcy} $ICY`
         ) : !isApproved ? (
           "Approve"
         ) : !rate ? (
@@ -177,11 +198,11 @@ export const Swap = ({ rate }: { rate: number }) => {
         )}
       </button>
 
-      {isOutOfMoneyError ? (
-        <p className="mt-2 font-medium text-red-400">
-          Error: contract out of money
-        </p>
-      ) : null}
+      {/* {isOutOfMoneyError ? ( */}
+      {/*   <p className="mt-2 font-medium text-red-400"> */}
+      {/*     Error: contract out of money */}
+      {/*   </p> */}
+      {/* ) : null} */}
     </div>
   );
 };

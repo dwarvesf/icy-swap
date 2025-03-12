@@ -3,21 +3,24 @@ import "@fontsource/ibm-plex-sans/500.css";
 import "@fontsource/ibm-plex-sans/700.css";
 import "../styles/globals.css";
 import { WagmiProvider, http, createConfig } from "wagmi";
-import { base } from "wagmi/chains";
+import { base, baseSepolia } from "wagmi/chains";
 import { ConnectKitProvider, getDefaultConfig } from "connectkit";
 import { Toaster } from "react-hot-toast";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
+// TODO: chain
+const theChain = base;
+
 const config = createConfig(
   // @ts-ignore
   getDefaultConfig({
-    chains: [base],
+    chains: [theChain],
     transports: {
-      [base.id]: http(),
+      [theChain.id]: http(),
     },
     walletConnectProjectId: "1830f624b03c2fc3d99fd758fb040ce0",
     appName: "Icy Swap",
-    appDescription: "Swap ICY to USDC",
+    appDescription: "Swap ICY to BTC",
     appUrl: "https://icy.so",
     appIcon: "https://icy.so/ICY.png",
   })

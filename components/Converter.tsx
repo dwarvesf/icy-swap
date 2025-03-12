@@ -1,13 +1,24 @@
 import { formatUnits } from "viem";
-import React, { useEffect } from "react";
+import React, { useState } from "react";
 import cln from "classnames";
-import { useAccount, useBalance } from "wagmi";
-import { Tooltip, TooltipContent, TooltipTrigger } from "components/ui/tooltip";
+import { useAccount, useBalance, useWatchAsset } from "wagmi";
 import Image from "next/image";
 import { address as contractAddress } from "../contract/icy";
 import { ICY_CONTRACT_ADDRESS } from "../envs";
 import { ArrowDownIcon } from "@heroicons/react/20/solid";
 import { QuestionMarkCircleIcon } from "@heroicons/react/24/solid";
+import { cn } from "@/lib/utils";
+import {
+  Modal,
+  ModalTrigger,
+  ModalPortal,
+  ModalOverlay,
+  ModalContent,
+  ModalTitle,
+  ModalDescription,
+  Button,
+  Tooltip,
+} from "@mochi-ui/core";
 
 const Input = (props: {
   label: string;
@@ -16,6 +27,7 @@ const Input = (props: {
   value: string;
   onChange: (v: string) => void;
   onAddToken?: () => void;
+  feeRate?: number;
 }) => {
   const { address } = useAccount();
   const { data: balance } = useBalance({
@@ -23,10 +35,10 @@ const Input = (props: {
     address,
   });
 
-  const formatted = formatUnits(
+  const formatted = (+formatUnits(
     balance?.value ?? BigInt(0),
     balance?.decimals ?? 0
-  );
+  )).toFixed(2);
 
   const symbol = balance?.symbol ? `$${balance.symbol}` : "";
 
@@ -80,22 +92,25 @@ export const Converter = ({
   tokenB,
   setAmountTokenA,
   setAmountTokenB,
-  onChange,
   rate,
   children,
   addressTokenB,
   setAddressTokenB,
+  feeRate,
+  minSats,
 }: {
   tokenA: string;
   setAmountTokenA: (v: string) => void;
   tokenB: string;
   setAmountTokenB: (v: string) => void;
-  onChange: (value: bigint) => void;
   rate: number;
   addressTokenB: string;
   setAddressTokenB: (v: string) => void;
   children?: React.ReactNode;
+  feeRate: number;
+  minSats: string;
 }) => {
+  const { watchAsset } = useWatchAsset();
   const requestWatch = async ({
     address,
     symbol,
@@ -105,33 +120,16 @@ export const Converter = ({
     symbol: string;
     decimals: number;
   }) => {
-    await window.ethereum?.request({
-      method: "wallet_watchAsset",
-      params: {
-        type: "ERC20",
-        options: {
-          address,
-          symbol,
-          decimals,
-        },
+    watchAsset({
+      type: "ERC20",
+      options: {
+        address,
+        symbol,
+        decimals,
       },
     });
   };
-
-  useEffect(() => {
-    if (tokenA.endsWith(".")) return;
-    let num = Number(tokenA);
-    let diffDeci = 0;
-    while (num !== 0 && !Number.isInteger(num)) {
-      diffDeci += 1;
-      num *= 10;
-    }
-    if (tokenA) {
-      onChange(BigInt(num) * BigInt(10 ** (18 - diffDeci)));
-    } else {
-      onChange(BigInt(0));
-    }
-  }, [tokenA, onChange]);
+  const [modalFee, setModalFee] = useState(false);
 
   return (
     <div
@@ -144,7 +142,7 @@ export const Converter = ({
         onChange={(v) => {
           if (!rate) return;
           setAmountTokenA(v);
-          setAmountTokenB(`${Number(v) / rate}`);
+          setAmountTokenB(`${Math.floor(Number(v) * rate)}`);
         }}
         label="From"
         token={{
@@ -169,40 +167,85 @@ export const Converter = ({
         value={tokenB}
         onChange={(v) => {
           if (!rate) return;
-          setAmountTokenB(v);
-          setAmountTokenA(`${Number(v) * rate}`);
+          setAmountTokenB(Math.floor(+v).toString());
+          setAmountTokenA(`${Number(v) / rate}`);
         }}
         label="To"
         token={{
-          icon: "/usdc.webp",
-          symbol: "BTC",
+          icon: "/satoshi.png",
+          symbol: "SATS",
         }}
+        feeRate={feeRate}
       />
       <div className="flex flex-col py-2 px-3 bg-white rounded md:py-4 md:px-5">
-        <span className="text-xs font-medium text-gray-500">
-          To BTC address
-        </span>
+        <div className="flex gap-x-1 items-center">
+          <span className="text-xs font-medium text-gray-500">
+            To BTC address
+          </span>
+          <Tooltip
+            className="relative z-20"
+            content={
+              <div className="max-w-xs font-normal text-white">
+                <p>
+                  Base and Bitcoin doesn&apos;t share the same wallet address
+                  format.
+                </p>
+                <p>
+                  So we can&apos;t assume sending addr == receiving addr, hence
+                  this field.
+                </p>
+              </div>
+            }
+          >
+            <QuestionMarkCircleIcon className="w-4 h-4 text-gray-500" />
+          </Tooltip>
+        </div>
         <input
           value={addressTokenB}
           onChange={(e) => setAddressTokenB(e.target.value)}
           className="text-2xl mt-4 p-0 w-full bg-transparent border-none !ring-transparent focus:ring-transparent outline-none focus:outline-none text-foreground"
         />
       </div>
-      <Tooltip delayDuration={100}>
-        <TooltipTrigger className="flex items-center text-sm text-left text-white hover:underline">
-          <QuestionMarkCircleIcon className="mr-1 w-4 h-4" />
-          Why do I need this address
-        </TooltipTrigger>
-        <TooltipContent className="max-w-xs">
-          <p>
-            Base and Bitcoin doesn&apos;t share the same wallet address format.
-          </p>
-          <p>
-            So we can&apos;t assume sending addr == receiving addr, hence this
-            field.
-          </p>
-        </TooltipContent>
-      </Tooltip>
+
+      <Modal modal={modalFee}>
+        <ModalTrigger asChild>
+          <button
+            onClick={() => setModalFee(true)}
+            type="button"
+            className={cn(
+              "self-start mt-1 text-gray-500 flex text-xs font-medium hover:underline hover:cursor-pointer"
+            )}
+          >
+            {(feeRate ?? 0) * 100}% Service Fee, min {minSats} SATS
+          </button>
+        </ModalTrigger>
+        <ModalPortal>
+          <ModalOverlay />
+          <ModalContent className="!p-5 max-w-sm overflow-hidden">
+            <div className="flex relative flex-col">
+              <ModalTitle className="relative">About service fee</ModalTitle>
+              <ModalDescription className="flex relative flex-col gap-y-2 mt-5">
+                <span className="font-medium">
+                  You&apos;re sending fund to a Bitcoin wallet
+                </span>
+                <span>
+                  Exchange to Bitcoin addresses can only be done through
+                  on-chain transfer, which will be sent on blockchain, which
+                  network fees charged.
+                </span>
+              </ModalDescription>
+              <ModalTrigger asChild className="relative">
+                <Button
+                  className="mt-3 w-full"
+                  onClick={() => setModalFee(false)}
+                >
+                  OK
+                </Button>
+              </ModalTrigger>
+            </div>
+          </ModalContent>
+        </ModalPortal>
+      </Modal>
     </div>
   );
 };
