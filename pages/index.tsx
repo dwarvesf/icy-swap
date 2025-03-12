@@ -91,10 +91,7 @@ export default function Home() {
                 <p className="text-lg font-medium">
                   {icyAmt} $ICY ≈ {commify(satoshis)} Satoshi (
                   {commify(
-                    (
-                      (satoshis * (data?.data.satoshi_per_usd ?? 0)) /
-                      Math.pow(10, 6)
-                    ).toFixed(5)
+                    (satoshis * (data?.data.satoshi_per_usd ?? 0)).toFixed(5)
                   )}{" "}
                   USD)
                 </p>
