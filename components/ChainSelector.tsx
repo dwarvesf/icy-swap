@@ -8,7 +8,7 @@ import Image from "next/image";
 import cln from "classnames";
 
 // TODO: chain
-const theChain = baseSepolia;
+const theChain = base;
 
 export const ChainSelector = () => {
   const { chain } = useAccount();

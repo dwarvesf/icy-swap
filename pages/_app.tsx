@@ -9,7 +9,7 @@ import { Toaster } from "react-hot-toast";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 // TODO: chain
-const theChain = baseSepolia;
+const theChain = base;
 
 const config = createConfig(
   // @ts-ignore
