@@ -133,7 +133,9 @@ export default function Home() {
               <div className="hidden mb-5 w-16 h-16 md:block" />
               <Swap
                 rate={rate ?? 0}
-                minIcy={+(data?.data.min_icy_to_swap ?? 0) / Math.pow(10, 18)}
+                minIcy={Math.ceil(
+                  +(data?.data.min_icy_to_swap ?? 0) / Math.pow(10, 18)
+                )}
                 feeRate={data?.data.service_fee_rate ?? 0}
                 minSats={data?.data.min_satoshi_fee ?? ""}
               />
