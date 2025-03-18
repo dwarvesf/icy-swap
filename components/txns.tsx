@@ -5,6 +5,7 @@ import { format } from "date-fns";
 import React, { useMemo, useState } from "react";
 import { useAccount } from "wagmi";
 import { VariantProps, cva } from "class-variance-authority";
+import { base, baseSepolia } from "wagmi/chains";
 import { cn, commify, fetchKeys } from "@/lib/utils";
 import useSWR from "swr";
 import { Txns as TxnsSchema } from "@/schemas";
@@ -12,6 +13,9 @@ import { Tooltip } from "@mochi-ui/core";
 import { ConnectKitButton } from "connectkit";
 import Image from "next/image";
 import { formatUnits } from "viem";
+
+// TODO: chain
+const theChain = base;
 
 const cell = cva(
   "self-center p-2 h-full text-sm whitespace-nowrap border-b border-gray-700 flex items-center"
@@ -64,7 +68,7 @@ function Status({ value }: { value: VariantProps<typeof status>["state"] }) {
 }
 
 export default function Txns({ rate }: { rate: number }) {
-  const { isConnected, address, chain } = useAccount();
+  const { isConnected, address } = useAccount();
   const [viewSelfTxs, setViewSelfTxs] = useState(false);
   const { data: txns, error } = useSWR(
     [fetchKeys.TXNS, viewSelfTxs, address],
@@ -204,7 +208,7 @@ export default function Txns({ rate }: { rate: number }) {
               />
               <Address
                 display={tx.swap_transaction_hash}
-                value={`${chain?.blockExplorers?.default.url}/tx/${tx.swap_transaction_hash}`}
+                value={`${theChain.blockExplorers.default.url}/tx/${tx.swap_transaction_hash}`}
               />
               <Address
                 display={tx.btc_transaction_hash}
