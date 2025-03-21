@@ -177,7 +177,7 @@ export default function Txns({ rate }: { rate: number }) {
                     <div className="grid auto-rows-auto text-sm font-normal grid-cols-[max-content_max-content]">
                       <span className="text-gray-400">Rate:</span>
                       <span className="text-right">
-                        1 ICY ≈ {commify(Math.floor(rate))} SATS
+                        1 ICY ≈ {commify(Math.floor(Number(tx.subtotal) / Number(formatUnits(BigInt(tx.icy_swap_tx.icy_amount), 18))))} SATS
                       </span>
                       <span className="text-gray-400">Amount:</span>
                       <span className="text-right">
