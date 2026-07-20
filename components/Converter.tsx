@@ -78,10 +78,15 @@ export const Converter = ({
   const { watchAsset } = useWatchAsset();
   const { data: balance } = useBalance({ token: contractAddress, address });
 
-  const formattedBalance = (+formatUnits(
-    balance?.value ?? BigInt(0),
-    balance?.decimals ?? 0
-  )).toFixed(2);
+  // FLOOR, never round. toFixed(2) rounds up, so a balance of 4200.999 shows
+  // as 4201.00 and Max then asks to swap more ICY than the wallet holds. That
+  // reverts on chain after the user has already paid gas, and now also trips
+  // the backend's balance check. Truncating can only ever under-ask.
+  const formattedBalance = (
+    Math.floor(
+      +formatUnits(balance?.value ?? BigInt(0), balance?.decimals ?? 0) * 100
+    ) / 100
+  ).toFixed(2);
 
   const subtotal = Math.floor(Number(tokenB) || 0);
   // Verified against live transactions 70-74: total = subtotal - service_fee,
