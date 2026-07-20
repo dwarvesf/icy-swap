@@ -1,3 +1,4 @@
+import { parseUnits } from "viem";
 import { validate, Network } from "bitcoin-address-validation";
 
 /**
@@ -6,13 +7,21 @@ import { validate, Network } from "bitcoin-address-validation";
  * here rather than each doing its own float maths.
  */
 export function icyToWei(icy: string): string {
-  const n = Number(icy);
-  if (!Number.isFinite(n) || n <= 0) return "0";
-  return (n * 10 ** 18).toLocaleString("fullwide", {
-    useGrouping: false,
-    maximumFractionDigits: 18,
-    notation: "standard",
-  });
+  // parseUnits, not Number(icy) * 10**18. A float cannot hold 18 significant
+  // decimal places, and the error went the dangerous way: 1793131.12 came out
+  // 200,000,000 wei ABOVE its exact value, so Max asked for more ICY than the
+  // wallet held and transferFrom reverted on chain after the user had paid gas
+  // and burned a backend nonce. parseUnits does exact decimal-string maths.
+  //
+  // It also fixes a render crash: more than 18 decimal places made the old
+  // function return "1.5", and BigInt("1.5") throws where it is called.
+  // parseUnits rounds the excess instead.
+  try {
+    const wei = parseUnits(icy as `${number}`, 18);
+    return wei > BigInt(0) ? wei.toString() : "0";
+  } catch {
+    return "0";
+  }
 }
 
 /**
