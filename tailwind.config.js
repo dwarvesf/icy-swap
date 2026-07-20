@@ -20,7 +20,12 @@ module.exports = {
         // edge to lift off and the whole view read as one flat sheet. This is
         // the ground the card now casts its shadow onto.
         page: "#16171c",
+        // #e03e5e is a mid-tone red: fine as a fill, too dark as TEXT on a dark
+        // surface, where it measured 3.09:1. The ramp only extended darker,
+        // which is backwards for a dark UI, so this is the tint side.
+        amber: "#FFC53D",
         brand: {
+          300: "#F58FA5",
           500: "#e03e5e",
           600: "#c51f4a",
           700: "#aa0036",

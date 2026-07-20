@@ -16,15 +16,25 @@ import {
   stripGroups,
 } from "@/lib/utils";
 
+// The error lives INSIDE the bordered box, not under it. Two reasons: the
+// brand border then encloses the cause and the message as one thing, and the
+// seam between the two amount fields stays empty by construction. That seam is
+// a zero-height row (h-7 pulled back by -my-3.5) that the arrow overlays, so
+// anything rendered into it lands underneath the arrow, which is exactly what
+// the balance error used to do.
 const Field = ({
   label,
   aside,
   invalid,
+  error,
+  errorId,
   children,
 }: {
   label: string;
   aside?: React.ReactNode;
   invalid?: boolean;
+  error?: React.ReactNode;
+  errorId?: string;
   children: React.ReactNode;
 }) => (
   <div
@@ -38,6 +48,11 @@ const Field = ({
       {aside}
     </div>
     {children}
+    {error ? (
+      <p id={errorId} role="alert" className="mt-1.5 text-xs leading-snug text-brand-300">
+        {error}
+      </p>
+    ) : null}
   </div>
 );
 
@@ -118,6 +133,9 @@ export const Converter = ({
   // be signed and sent only to revert on chain, after gas. Caught next to the
   // field instead, the same way the minimum already is.
   const overBalance = Boolean(balance) && +tokenA > +formattedBalance;
+  // Was rendered below the whole card, a third error placement detached from
+  // the field that caused it. It belongs to the amount, so it lives there.
+  const amountTooSmall = +tokenA > 0 && +tokenA < minIcy;
 
   const subtotal = Math.floor(Number(tokenB) || 0);
   // Verified against live transactions 70-74: total = subtotal - service_fee,
@@ -169,7 +187,15 @@ export const Converter = ({
     <div className="flex flex-col">
       <Field
         label="You pay"
-        invalid={overBalance}
+        invalid={overBalance || amountTooSmall}
+        errorId="icy-amount-error"
+        error={
+          overBalance
+            ? `You hold ${commify(formattedBalance)} ICY. Use Max to swap all of it.`
+            : amountTooSmall
+            ? `The smallest swap is ${commify(minIcy)} ICY.`
+            : null
+        }
         aside={
           balance ? (
             <span className="text-ink-3">
@@ -181,7 +207,7 @@ export const Converter = ({
                   setAmountTokenA(formattedBalance);
                   setAmountTokenB(`${Math.floor(+formattedBalance * rate)}`);
                 }}
-                className="py-0.5 px-1.5 ml-2 text-[10.5px] font-medium tracking-wider text-ink-2 uppercase rounded border border-white/10 hover:border-icy-100 hover:text-icy-100 focus-visible:border-icy-100"
+                className="py-1 px-2 ml-2 min-h-[24px] text-[11px] font-medium tracking-wider text-ink-2 uppercase rounded border border-white/10 hover:border-icy-100 hover:text-icy-100 focus-visible:border-icy-100"
               >
                 Max
               </button>
@@ -228,15 +254,14 @@ export const Converter = ({
           </button>
         </div>
       </Field>
-      {overBalance ? (
-        <p role="alert" className="mt-1.5 text-xs text-brand">
-          You hold {commify(formattedBalance)} ICY. Use Max to swap all of it.
-        </p>
-      ) : null}
-
-      <div className="flex relative z-10 -my-3.5 justify-center">
-        <span className="grid place-items-center w-7 h-7 text-ink-2 rounded-full border bg-foreground-100 border-white/10">
-          <ArrowDownIcon width={14} height={14} />
+      {/* A real 4px seam, not a zero-height row faked with -my. The arrow is
+          anchored to it absolutely and is decorative (it has never had a
+          handler), so it takes itself out of the layout and out of the hit
+          testing. The ring in the card colour notches the field borders
+          passing behind it. */}
+      <div className="flex relative z-10 justify-center h-1" aria-hidden="true">
+        <span className="grid absolute top-1/2 place-items-center w-9 h-9 rounded-full border ring-4 -translate-y-1/2 pointer-events-none text-ink-2 bg-foreground-100 border-white/10 ring-foreground-100">
+          <ArrowDownIcon width={16} height={16} />
         </span>
       </div>
 
@@ -265,10 +290,16 @@ export const Converter = ({
         </div>
       </Field>
 
-      <div className="mt-2">
+      <div className="mt-3">
         <Field
           label="Bitcoin address"
           invalid={addressInvalid}
+          errorId="btc-address-error"
+          error={
+            addressInvalid
+              ? "This is not a Bitcoin mainnet address. Test network addresses (starting tb1, bcrt1, m or n) cannot receive a payout."
+              : null
+          }
           aside={
             <span className="text-right text-ink-3">
               Not your Base address
@@ -286,16 +317,6 @@ export const Converter = ({
             className="p-0 w-full min-h-[28px] font-mono text-[13px] bg-transparent border-none !ring-transparent !shadow-none outline-none focus:outline-none text-ink placeholder:text-ink-3"
           />
         </Field>
-        {addressInvalid ? (
-          <p
-            id="btc-address-error"
-            role="alert"
-            className="mt-1.5 text-xs text-brand"
-          >
-            This is not a Bitcoin mainnet address. Test network addresses
-            (starting tb1, bcrt1, m or n) cannot receive a payout.
-          </p>
-        ) : null}
       </div>
 
       {/* Fees used to sit behind a modal. People moving Bitcoin want the

@@ -23,7 +23,7 @@ export const ChainSelector = () => {
         type="button"
         onClick={() => switchChain?.({ chainId: theChain.id })}
         disabled={isPending}
-        className="flex gap-2 items-center py-1.5 px-3 min-h-[32px] text-sm font-medium rounded-lg border transition-colors bg-brand/10 border-brand/40 text-brand hover:bg-brand/20 focus-visible:ring-2 focus-visible:ring-brand disabled:opacity-60"
+        className="flex gap-2 items-center py-1.5 px-3 min-h-[32px] text-sm font-medium rounded-lg border transition-colors bg-brand/10 border-brand/40 text-brand-300 hover:bg-brand/20 focus-visible:ring-2 focus-visible:ring-brand disabled:opacity-60"
       >
         <ExclamationTriangleIcon width={16} height={16} />
         {isPending ? "Switching..." : `Switch to ${theChain.name}`}
