@@ -47,7 +47,13 @@ export const Tx = z.object({
   btc_address: z.string(),
   processed_at: z.string().nullable(), // ISO
   subtotal: z.string(),
-  status: z.enum(["completed", "failed", "pending"]),
+  // The backend owns this vocabulary and has SIX values today (pending,
+  // processing, broadcasted, completed, failed, needs_reconcile). A strict
+  // enum here meant one in-flight swap made zod reject the whole array and
+  // the entire list rendered as an error, which is exactly what production
+  // did. Accept any string; the UI maps the known ones and falls back for
+  // the rest, so a new backend status can never blank the list again.
+  status: z.string(),
   icy_swap_tx: z.object({
     transaction_hash: z.string(),
     block_number: z.number(),
@@ -66,6 +72,9 @@ export const Tx = z.object({
 });
 export const Txns = z.object({
   total: z.number(),
-  transactions: z.array(Tx),
+  // One malformed row must not blank the whole list. `catch` turns a failed
+  // element into null instead of rejecting the array; the caller filters them
+  // out. Losing one row is a far better failure than losing all of them.
+  transactions: z.array(Tx.nullable().catch(null)),
 });
 export type TX = z.infer<typeof Tx>;

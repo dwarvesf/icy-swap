@@ -15,27 +15,43 @@ const theChain = base;
 
 const TOP_RESULT_COUNT = 8;
 
-const STATUS_COPY: Record<TX["status"], string> = {
+// Every status the backend can emit (internal/model: pending, processing,
+// broadcasted, completed, failed, needs_reconcile), in plain words. Anything
+// unknown falls back rather than rendering an empty pill, so the UI degrades
+// instead of breaking when the backend adds a state.
+const STATUS_COPY: Record<string, string> = {
   completed: "Sent",
-  pending: "In flight",
+  broadcasted: "Sending",
+  processing: "Processing",
+  pending: "Queued",
   failed: "Failed",
+  needs_reconcile: "Needs review",
 };
 
-const STATUS_STYLE: Record<TX["status"], string> = {
+const STATUS_STYLE: Record<string, string> = {
   completed: "bg-icy-200/10 text-icy-200",
+  broadcasted: "bg-icy-100/10 text-icy-100",
+  processing: "bg-icy-500/10 text-icy-500",
   pending: "bg-icy-500/10 text-icy-500",
-  failed: "bg-brand/10 text-brand",
+  failed: "bg-red-400/10 text-red-400",
+  needs_reconcile: "bg-red-400/10 text-red-400",
 };
 
-function Pill({ status }: { status: TX["status"] }) {
+const STATUS_FALLBACK = "bg-white/[0.06] text-gray-300";
+
+function humanizeStatus(status: string) {
+  return status.replace(/_/g, " ");
+}
+
+function Pill({ status }: { status: string }) {
   return (
     <span
       className={cn(
         "self-start rounded-full py-[3px] px-2 text-[10px] font-semibold uppercase tracking-[0.05em]",
-        STATUS_STYLE[status]
+        STATUS_STYLE[status] ?? STATUS_FALLBACK
       )}
     >
-      {STATUS_COPY[status]}
+      {STATUS_COPY[status] ?? humanizeStatus(status)}
     </span>
   );
 }
@@ -135,7 +151,12 @@ export default function Txns() {
       `${BASE_URL}/transactions${!viewSelf ? "" : `?evm_address=${address}`}`
     )
       .then((res) => res.json())
-      .then((res) => TxnsSchema.parse(res).transactions);
+      // Drop the rows that failed to parse (null) rather than the whole list.
+      .then((res) =>
+        TxnsSchema.parse(res).transactions.filter(
+          (t): t is TX => t !== null
+        )
+      );
   });
 
   const button = useMemo(() => {
