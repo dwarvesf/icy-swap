@@ -5,12 +5,16 @@ import {
   useWriteContract,
 } from "wagmi";
 import { ICY_SWAPPER_CONTRACT_ADDRESS } from "../envs";
+import { theChain } from "@/lib/chain";
 
 const getConfig = (token: `0x${string}`, value: bigint) => ({
   address: token,
   abi: erc20Abi,
   functionName: "approve",
   args: [ICY_SWAPPER_CONTRACT_ADDRESS, value.toString()],
+  // Pin the approval to Base: an approval mined on another chain both fails
+  // this app and leaves a live allowance where nobody is looking for it.
+  chainId: theChain.id,
 });
 
 export function useApproveToken(
@@ -23,6 +27,9 @@ export function useApproveToken(
     args: [owner, ICY_SWAPPER_CONTRACT_ADDRESS],
     abi: erc20Abi,
     address: token,
+    // Same pin as the write: an allowance read against the wrong chain
+    // reports 0 and walks the user into approving there.
+    chainId: theChain.id,
   });
 
   const {

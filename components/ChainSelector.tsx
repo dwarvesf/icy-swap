@@ -1,11 +1,8 @@
 import React from "react";
 import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
-import { base } from "wagmi/chains";
 import { useAccount, useSwitchChain } from "wagmi";
 import Image from "next/image";
-
-// TODO: chain
-const theChain = base;
+import { theChain } from "@/lib/chain";
 
 /**
  * Base is the only chain this app serves, so the picker was a dropdown whose
