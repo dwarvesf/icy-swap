@@ -144,16 +144,6 @@ export default function Home() {
               <Txns rate={rate ?? 0} />
             </div>
           </div>
-          <div className="flex flex-col items-start mt-auto mr-5 mb-10 ml-auto">
-            <a
-              href="https://careers.d.foundation/"
-              target="_blank"
-              rel="noreferrer"
-              className="text-base"
-            >
-              Join us
-            </a>
-          </div>
         </div>
       </main>
     </div>
