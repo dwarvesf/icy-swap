@@ -26,6 +26,8 @@ export const signatureRequest = z.object({
   // anyone because it ships inside the browser bundle.
   wallet_signature: z.string(),
   wallet_deadline: z.number(),
+  // bytes32 hex; makes the signature single-use (backend keeps a seen-set).
+  wallet_nonce: z.string().regex(/^0x[0-9a-f]{64}$/),
 });
 
 export const signatureResponse = z.object({

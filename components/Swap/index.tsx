@@ -23,6 +23,7 @@ import {
   SWAP_REQUEST_DOMAIN,
   SWAP_REQUEST_TYPES,
   swapRequestDeadline,
+  swapRequestNonce,
 } from "@/lib/walletAuth";
 import { signatureRequest, signatureResponse } from "@/schemas";
 import { useApproveToken } from "@/hooks/useApproveToken";
@@ -127,6 +128,7 @@ export const Swap = ({
     // it happens before the "Swapping..." toast to keep the order honest.
     let walletSignature: string;
     const walletDeadline = swapRequestDeadline();
+    const walletNonce = swapRequestNonce();
     try {
       walletSignature = await signTypedDataAsync({
         domain: SWAP_REQUEST_DOMAIN,
@@ -136,6 +138,7 @@ export const Swap = ({
           icyAmount: BigInt(icyAmount),
           btcAddress: payoutAddress,
           deadline: walletDeadline,
+          nonce: walletNonce,
         },
       });
     } catch (e) {
@@ -161,6 +164,7 @@ export const Swap = ({
           btc_amount: btcAmount,
           wallet_signature: walletSignature,
           wallet_deadline: Number(walletDeadline),
+          wallet_nonce: walletNonce,
         })
       ),
     })
