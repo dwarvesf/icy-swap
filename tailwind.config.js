@@ -16,6 +16,10 @@ module.exports = {
           DEFAULT: "#23252C",
           100: "#1d2232",
         },
+        // The page sat on the same #23252C as the card, so the card had no
+        // edge to lift off and the whole view read as one flat sheet. This is
+        // the ground the card now casts its shadow onto.
+        page: "#16171c",
         brand: {
           500: "#e03e5e",
           600: "#c51f4a",
@@ -24,6 +28,15 @@ module.exports = {
           900: "#760013",
           1000: "#5c0000",
           DEFAULT: "#e03e5e",
+        },
+        // The design's three-level text ramp on the dark ground. Tailwind's
+        // gray-400 was standing in for all three, so a field label and its
+        // value came out the same colour and the hierarchy flattened. The
+        // greys are also cooler than Tailwind's, which read green next to icy.
+        ink: {
+          DEFAULT: "#f2f3f5",
+          2: "#a8adba",
+          3: "#6f7686",
         },
         icy: {
           100: "#95E3E7",

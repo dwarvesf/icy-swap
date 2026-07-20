@@ -20,5 +20,6 @@
     }
   },
   "include": ["custom.d.ts", "next-env.d.ts", "**/*.ts", "**/*.tsx"],
-  "exclude": ["node_modules"]
+  "//": "*.check.ts are run directly by node (which needs the .ts extension on imports, and which the Next build's resolver rejects). They are not part of the bundle.",
+  "exclude": ["node_modules", "**/*.check.ts"]
 }

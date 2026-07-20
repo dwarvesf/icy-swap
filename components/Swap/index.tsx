@@ -255,12 +255,12 @@ export const Swap = ({
       />
 
       {amountTooSmall ? (
-        <p role="alert" className="mt-3 text-xs text-red-400">
+        <p role="alert" className="mt-3 text-xs text-brand">
           The smallest swap is {commify(minIcy)} ICY.
         </p>
       ) : null}
       {!rate && !loadingRate ? (
-        <p role="alert" className="mt-3 text-xs text-red-400">
+        <p role="alert" className="mt-3 text-xs text-brand">
           We could not reach the rate service, so swapping is paused. Refresh in
           a moment.
         </p>
@@ -274,7 +274,7 @@ export const Swap = ({
             <button
               type="button"
               onClick={show}
-              className={cn(cta, "bg-brand-600 text-white hover:bg-brand-700")}
+              className={cn(cta, "bg-brand text-white hover:bg-brand-600")}
             >
               Connect a wallet to swap
             </button>
@@ -284,9 +284,13 @@ export const Swap = ({
         <button
           type="button"
           className={cn(cta, {
-            "bg-white/[0.07] text-gray-400 cursor-not-allowed":
-              !ready || loading,
-            "bg-brand-600 text-white hover:bg-brand-700": ready && !loading,
+            // ink-2, not ink-3: this button's disabled label is not decorative,
+            // it carries the only instruction on screen ("Enter an amount",
+            // "Approve ICY", "Rate unavailable"). At ink-3 it measured 2.84:1
+            // against this fill, so the one thing telling you what to do next
+            // was the least readable text on the page. ink-2 is 5.75:1.
+            "bg-white/[0.07] text-ink-2 cursor-not-allowed": !ready || loading,
+            "bg-brand text-white hover:bg-brand-600": ready && !loading,
           })}
           disabled={loading || !ready}
           onClick={!isApproved ? approve : swap}

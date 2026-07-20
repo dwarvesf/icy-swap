@@ -4,6 +4,9 @@
 
 body {
   font-family: "IBM Plex Sans", sans-serif;
+  /* Light text on a dark ground renders too heavy without this; the design
+     assumes antialiased, and the mono figures in particular were blooming. */
+  -webkit-font-smoothing: antialiased;
 }
 
 /* Chrome, Safari, Edge, Opera */

@@ -1,5 +1,9 @@
 import "@fontsource/ibm-plex-sans";
 import "@fontsource/ibm-plex-sans/500.css";
+// 600 was missing while font-semibold is used on the CTA, the logo and every
+// status pill, so the browser was snapping those to 700 and they rendered a
+// weight heavier than the design.
+import "@fontsource/ibm-plex-sans/600.css";
 import "@fontsource/ibm-plex-sans/700.css";
 import "../styles/globals.css";
 import { WagmiProvider, http, createConfig } from "wagmi";
@@ -32,7 +36,27 @@ export default function App({ Component, pageProps }: any) {
   return (
     <WagmiProvider config={config}>
       <QueryClientProvider client={queryClient}>
-        <ConnectKitProvider theme="soft">
+        {/* ConnectKit's "soft" theme ships a white pill, which was the one
+            control on the page not speaking the brand. Only the connect button
+            is overridden; the modal keeps ConnectKit's own dark treatment. */}
+        <ConnectKitProvider
+          theme="midnight"
+          customTheme={{
+            // Named, not "inherit": ConnectKit resolves this outside the
+            // cascade our body font reaches, and inherit was falling through
+            // to the serif default.
+            "--ck-font-family": '"IBM Plex Sans", sans-serif',
+            "--ck-connectbutton-border-radius": "8px",
+            "--ck-connectbutton-font-size": "13px",
+            // Deliberately NOT brand. The swap CTA is the page's one primary;
+            // a second red control in the header competes with it and says the
+            // same thing twice. This one recedes until it is needed.
+            "--ck-connectbutton-color": "#f2f3f5",
+            "--ck-connectbutton-background": "rgba(255,255,255,0.06)",
+            "--ck-connectbutton-hover-background": "rgba(255,255,255,0.11)",
+            "--ck-connectbutton-active-background": "rgba(255,255,255,0.14)",
+          }}
+        >
           <Toaster />
           <Component {...pageProps} />
         </ConnectKitProvider>

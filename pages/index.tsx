@@ -47,7 +47,7 @@ export default function Home() {
         <meta property="twitter:image" content="/banner.png" />
       </Head>
 
-      <main className="flex flex-col items-center px-4 py-8 min-h-screen text-white bg-foreground md:py-14">
+      <main className="flex flex-col items-center px-4 py-8 min-h-screen text-ink bg-page md:py-14">
         <div className="w-full max-w-4xl rounded-[14px] border border-white/10 bg-foreground shadow-[0_18px_50px_-20px_rgba(0,0,0,0.55)] overflow-hidden">
           <div className="flex flex-wrap gap-y-2 gap-x-3 items-center py-3.5 px-5 border-b border-white/10">
             <span className="flex gap-2.5 items-center text-[15px] font-semibold">
@@ -97,13 +97,13 @@ export default function Home() {
             <Txns />
           </div>
 
-          <div className="flex flex-wrap gap-y-1.5 gap-x-[18px] items-center py-3 px-5 text-[12.5px] text-gray-400 border-t border-white/10">
+          <div className="flex flex-wrap gap-y-1.5 gap-x-[18px] items-center py-3 px-5 text-[12.5px] text-ink-3 border-t border-white/10">
             <span>The token of Dwarves Network</span>
             <a
               rel="noreferrer"
               target="_blank"
               href="https://earn.d.foundation/"
-              className="inline-flex items-center min-h-[24px] text-gray-400 hover:text-icy-100"
+              className="inline-flex items-center min-h-[24px] text-ink-2 hover:text-icy-100"
             >
               Radar
             </a>
@@ -111,7 +111,7 @@ export default function Home() {
               rel="noreferrer"
               target="_blank"
               href="https://discord.gg/dwarvesv"
-              className="inline-flex items-center min-h-[24px] text-gray-400 hover:text-icy-100"
+              className="inline-flex items-center min-h-[24px] text-ink-2 hover:text-icy-100"
             >
               Discord
             </a>
