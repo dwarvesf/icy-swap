@@ -7,13 +7,10 @@ import "@fontsource/ibm-plex-sans/600.css";
 import "@fontsource/ibm-plex-sans/700.css";
 import "../styles/globals.css";
 import { WagmiProvider, http, createConfig } from "wagmi";
-import { base, baseSepolia } from "wagmi/chains";
 import { ConnectKitProvider, getDefaultConfig } from "connectkit";
 import { Toaster } from "react-hot-toast";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-
-// TODO: chain
-const theChain = base;
+import { theChain } from "@/lib/chain";
 
 const config = createConfig(
   // @ts-ignore

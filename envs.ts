@@ -25,4 +25,6 @@ export const ICY_SWAPPER_CONTRACT_ADDRESS = contractAddress(
 export const BTC_EXPLORER = process.env.NEXT_PUBLIC_BTC_EXPLORER;
 
 export const BASE_URL = process.env.NEXT_PUBLIC_BE_API as string;
-export const API_KEY = process.env.NEXT_PUBLIC_API_KEY as string;
+// The backend ApiKey deliberately has no export here: it lives server-side in
+// pages/api/swap-signature.ts. Re-adding a NEXT_PUBLIC_ key would put it back
+// in the public bundle.

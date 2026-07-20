@@ -3,15 +3,12 @@ import { isSSR, truncate } from "@dwarvesf/react-utils";
 import { formatDistanceToNowStrict } from "date-fns";
 import React, { useMemo, useState } from "react";
 import { useAccount } from "wagmi";
-import { base } from "wagmi/chains";
 import { cn, commify, fetchKeys } from "@/lib/utils";
+import { theChain } from "@/lib/chain";
 import useSWR from "swr";
 import { TX, Txns as TxnsSchema } from "@/schemas";
 import { ConnectKitButton } from "connectkit";
 import { formatUnits } from "viem";
-
-// TODO: chain
-const theChain = base;
 
 // Six, not eight: the list ran taller than the swap card beside it and left a
 // column of dead space under the CTA. Recent means recent, not exhaustive.

@@ -10,8 +10,6 @@ import { Converter } from "../Converter";
 import { useCallback, useEffect, useState } from "react";
 import { ConnectKitButton } from "connectkit";
 import {
-  API_KEY,
-  BASE_URL,
   ICY_CONTRACT_ADDRESS,
   ICY_SWAPPER_CONTRACT_ADDRESS,
 } from "../../envs";
@@ -30,6 +28,7 @@ import { signatureRequest, signatureResponse } from "@/schemas";
 import { useApproveToken } from "@/hooks/useApproveToken";
 import { mutate } from "swr";
 import { cn, commify, fetchKeys, floorIcyBalance } from "@/lib/utils";
+import { theChain } from "@/lib/chain";
 
 const cta =
   "mt-4 w-full rounded-[10px] py-3 text-[14.5px] font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-icy-100";
@@ -46,6 +45,10 @@ const getContractConfig = (
   abi: swapperABI,
   functionName: "swap",
   args: [icy, btcAddr, btc, nonce, deadline, signature],
+  // Defence in depth alongside ConnectKit's enforceSupportedChains: if the
+  // wallet is on the wrong network when the write fires, wagmi switches or
+  // rejects instead of sending the call wherever the wallet points.
+  chainId: theChain.id,
 });
 
 export const Swap = ({
@@ -144,10 +147,11 @@ export const Swap = ({
     toast("Swapping...", {
       position: "bottom-center",
     });
-    fetch(`${BASE_URL}/swap/generate-signature`, {
+    // Same-origin proxy (pages/api/swap-signature.ts) holds the ApiKey
+    // server-side; nothing secret ships in this bundle.
+    fetch("/api/swap-signature", {
       method: "POST",
       headers: {
-        Authorization: `ApiKey ${API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify(
