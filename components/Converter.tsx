@@ -7,6 +7,7 @@ import { ICY_CONTRACT_ADDRESS } from "../envs";
 import { ArrowDownIcon } from "@heroicons/react/20/solid";
 import { isMainnetBtcAddress } from "@/lib/btc";
 import {
+  floorIcyBalance,
   caretAfterDigits,
   cn,
   commify,
@@ -109,15 +110,14 @@ export const Converter = ({
   const { watchAsset } = useWatchAsset();
   const { data: balance } = useBalance({ token: contractAddress, address });
 
-  // FLOOR, never round. toFixed(2) rounds up, so a balance of 4200.999 shows
-  // as 4201.00 and Max then asks to swap more ICY than the wallet holds. That
-  // reverts on chain after the user has already paid gas, and now also trips
-  // the backend's balance check. Truncating can only ever under-ask.
-  const formattedBalance = (
-    Math.floor(
-      +formatUnits(balance?.value ?? BigInt(0), balance?.decimals ?? 0) * 100
-    ) / 100
-  ).toFixed(2);
+  const formattedBalance = floorIcyBalance(
+    formatUnits(balance?.value ?? BigInt(0), balance?.decimals ?? 0)
+  );
+
+  // Nothing stopped an amount larger than the wallet holds, so the swap could
+  // be signed and sent only to revert on chain, after gas. Caught next to the
+  // field instead, the same way the minimum already is.
+  const overBalance = Boolean(balance) && +tokenA > +formattedBalance;
 
   const subtotal = Math.floor(Number(tokenB) || 0);
   // Verified against live transactions 70-74: total = subtotal - service_fee,
@@ -169,6 +169,7 @@ export const Converter = ({
     <div className="flex flex-col">
       <Field
         label="You pay"
+        invalid={overBalance}
         aside={
           balance ? (
             <span className="text-ink-3">
@@ -227,6 +228,11 @@ export const Converter = ({
           </button>
         </div>
       </Field>
+      {overBalance ? (
+        <p role="alert" className="mt-1.5 text-xs text-brand">
+          You hold {commify(formattedBalance)} ICY. Use Max to swap all of it.
+        </p>
+      ) : null}
 
       <div className="flex relative z-10 -my-3.5 justify-center">
         <span className="grid place-items-center w-7 h-7 text-ink-2 rounded-full border bg-foreground-100 border-white/10">

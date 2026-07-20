@@ -21,6 +21,21 @@ export function formatRate(rate: number): string {
 }
 
 /**
+ * The wallet's ICY balance, floored to 2dp.
+ *
+ * FLOOR, never round. toFixed(2) rounds up, so a balance of 4200.999 shows as
+ * 4201.00 and Max then asks to swap more ICY than the wallet holds. That
+ * reverts on chain after the user has already paid gas, and trips the
+ * backend's balance check too. Truncating can only ever under-ask.
+ *
+ * Lives here because both the field that displays it and the button that has
+ * to refuse to exceed it need the same number.
+ */
+export function floorIcyBalance(raw: string): string {
+  return (Math.floor(+raw * 100) / 100).toFixed(2);
+}
+
+/**
  * Group an EDITABLE field's digits. Unlike commify this only inserts
  * separators: it keeps a trailing ".", leading zeros and trailing decimal
  * zeros, every one of which is a legitimate half-typed state. Normalising

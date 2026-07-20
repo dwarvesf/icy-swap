@@ -32,6 +32,22 @@ const config = createConfig(
 
 const queryClient = new QueryClient();
 
+/**
+ * ConnectKit's default is a generated gradient blob, which is a stranger's
+ * identity on a page that only ever deals in one token. The ICY mark says
+ * whose app this wallet is connected to.
+ */
+const IcyAvatar = ({ size }: { size: number }) => (
+  // eslint-disable-next-line @next/next/no-img-element
+  <img
+    src="/ICY.png"
+    alt=""
+    width={size}
+    height={size}
+    style={{ borderRadius: size, display: "block" }}
+  />
+);
+
 export default function App({ Component, pageProps }: any) {
   return (
     <WagmiProvider config={config}>
@@ -41,6 +57,20 @@ export default function App({ Component, pageProps }: any) {
             is overridden; the modal keeps ConnectKit's own dark treatment. */}
         <ConnectKitProvider
           theme="midnight"
+          options={{
+            // The connected modal led with an ETH balance. This app never
+            // touches ETH, so it was reporting "0.00" as if something were
+            // wrong, about a token nobody came here for.
+            hideBalance: true,
+            customAvatar: IcyAvatar,
+            // Base is the only supported chain, so let ConnectKit refuse a
+            // wrong-network wallet at the source rather than leaving the app
+            // to notice afterwards.
+            enforceSupportedChains: true,
+            hideQuestionMarkCTA: true,
+            hideNoWalletCTA: true,
+            overlayBlur: 3,
+          }}
           customTheme={{
             // Named, not "inherit": ConnectKit resolves this outside the
             // cascade our body font reaches, and inherit was falling through

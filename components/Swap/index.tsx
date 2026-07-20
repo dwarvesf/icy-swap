@@ -19,6 +19,7 @@ import { abi as swapperABI } from "../../contract/swapper";
 import { Spinner } from "../Spinner";
 import toast from "react-hot-toast";
 import { useQueryClient } from "@tanstack/react-query";
+import { formatUnits } from "viem";
 import { icyToWei, isMainnetBtcAddress } from "@/lib/btc";
 import {
   SWAP_REQUEST_DOMAIN,
@@ -28,7 +29,7 @@ import {
 import { signatureRequest, signatureResponse } from "@/schemas";
 import { useApproveToken } from "@/hooks/useApproveToken";
 import { mutate } from "swr";
-import { cn, commify, fetchKeys } from "@/lib/utils";
+import { cn, commify, fetchKeys, floorIcyBalance } from "@/lib/utils";
 
 const cta =
   "mt-4 w-full rounded-[10px] py-3 text-[14.5px] font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-icy-100";
@@ -65,7 +66,7 @@ export const Swap = ({
   const queryClient = useQueryClient();
   const { data: blockNumber } = useBlockNumber({ watch: true });
   const { address } = useAccount();
-  const { queryKey } = useBalance({
+  const { queryKey, data: balance } = useBalance({
     token: ICY_CONTRACT_ADDRESS,
     address,
   });
@@ -224,8 +225,18 @@ export const Swap = ({
 
   const addressValid = isMainnetBtcAddress(btcAddress);
   const amountTooSmall = Boolean(icy) && +icy < minIcy;
+  // The ceiling the button has to respect. Reading the balance here as well as
+  // in Converter costs no request: wagmi serves both from one query cache.
+  const maxIcy = balance
+    ? floorIcyBalance(formatUnits(balance.value, balance.decimals))
+    : null;
+  const overBalance = maxIcy !== null && +icy > +maxIcy;
   const ready =
-    Boolean(rate) && Boolean(address) && +icy >= minIcy && addressValid;
+    Boolean(rate) &&
+    Boolean(address) &&
+    +icy >= minIcy &&
+    !overBalance &&
+    addressValid;
 
   // A control says what it does. Anything the user still has to fix is stated
   // next to the field that caused it, not written over the button label.
@@ -234,6 +245,7 @@ export const Swap = ({
     if (!rate) return "Rate unavailable";
     if (!address) return "Connect a wallet to swap";
     if (!icy || +icy <= 0) return "Enter an amount";
+    if (overBalance) return "Amount exceeds your balance";
     if (!isApproved) return "Approve ICY";
     return `Swap ${commify(icy)} ICY for Bitcoin`;
   };
