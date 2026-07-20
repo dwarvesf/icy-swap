@@ -85,7 +85,12 @@ export default function Home() {
                 feeRate={info?.service_fee_rate ?? 0}
                 minSats={info?.min_satoshi_fee ?? ""}
                 satoshiPerUsd={info?.satoshi_per_usd ?? 0}
-                loadingRate={isLoading}
+                // Only "loading" while there is no error. SWR keeps retrying a
+                // failed fetch and flips isLoading back to true each attempt,
+                // which had the swap card saying "Loading the rate" forever
+                // while the strip above it said the rate was unavailable. Two
+                // components must not disagree about one state.
+                loadingRate={isLoading && !error}
               />
             </div>
 
