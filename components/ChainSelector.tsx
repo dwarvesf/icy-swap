@@ -1,57 +1,40 @@
 import React from "react";
-import { Listbox } from "@headlessui/react";
 import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
-import { ChevronDownIcon } from "@heroicons/react/20/solid";
-import { base, baseSepolia } from "wagmi/chains";
+import { base } from "wagmi/chains";
 import { useAccount, useSwitchChain } from "wagmi";
 import Image from "next/image";
-import cln from "classnames";
 
 // TODO: chain
 const theChain = base;
 
+/**
+ * Base is the only chain this app serves, so the picker was a dropdown whose
+ * menu held exactly one item: a control that cannot change anything. What is
+ * left is a label, which becomes a real action only when the wallet is
+ * somewhere else and there is genuinely something to switch.
+ */
 export const ChainSelector = () => {
-  const { chain } = useAccount();
-  const { switchChain } = useSwitchChain();
+  const { chain, isConnected } = useAccount();
+  const { switchChain, isPending } = useSwitchChain();
 
-  const wrongChain = chain && chain.id !== theChain.id;
+  if (isConnected && chain && chain.id !== theChain.id) {
+    return (
+      <button
+        type="button"
+        onClick={() => switchChain?.({ chainId: theChain.id })}
+        disabled={isPending}
+        className="flex gap-2 items-center py-1.5 px-3 min-h-[32px] text-sm font-medium rounded-lg border transition-colors bg-brand/10 border-brand/40 text-brand hover:bg-brand/20 focus-visible:ring-2 focus-visible:ring-brand disabled:opacity-60"
+      >
+        <ExclamationTriangleIcon width={16} height={16} />
+        {isPending ? "Switching..." : `Switch to ${theChain.name}`}
+      </button>
+    );
+  }
 
   return (
-    <Listbox onChange={(id) => switchChain?.({ chainId: Number(id) })}>
-      <div className="relative">
-        <Listbox.Button
-          className={({ open }) =>
-            cln(
-              "space-x-2 min-h-[32px] text-ink hover:bg-white/5 active:bg-white/5 px-2 rounded-lg flex items-center transition-all duration-100 ease-in-out",
-              {
-                "bg-white/10": open,
-              }
-            )
-          }
-        >
-          {wrongChain ? (
-            <>
-              <ExclamationTriangleIcon height={20} width={20} />
-              <p className="text-sm font-medium">Unsupported</p>
-            </>
-          ) : (
-            <>
-              <Image width={16} height={16} src="/base.webp" alt="" />
-              <p className="text-sm font-medium">{theChain.name}</p>
-            </>
-          )}
-          <ChevronDownIcon width={20} height={20} />
-        </Listbox.Button>
-        <Listbox.Options className="absolute left-0 top-full p-2 rounded-lg border border-white/10 shadow translate-y-2 min-w-[200px] bg-foreground-100">
-          <Listbox.Option
-            className="flex items-center p-2 space-x-2 text-ink rounded-lg transition-all duration-100 ease-in-out cursor-pointer hover:bg-white/5"
-            value={theChain.id}
-          >
-            <Image width={16} height={16} src="/base.webp" alt="" />
-            <p>{theChain.name}</p>
-          </Listbox.Option>
-        </Listbox.Options>
-      </div>
-    </Listbox>
+    <span className="flex gap-2 items-center py-1.5 px-3 min-h-[32px] text-sm font-medium rounded-lg text-ink-2">
+      <Image width={16} height={16} src="/base.webp" alt="" />
+      {theChain.name}
+    </span>
   );
 };

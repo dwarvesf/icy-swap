@@ -30,16 +30,24 @@ const STATUS_COPY: Record<string, string> = {
   needs_reconcile: "Needs review",
 };
 
-// A settled swap is not news. Eight loud teal pills was the list shouting its
-// least interesting fact, so "completed" recedes to the quiet default and the
-// colour is spent on the states that are still moving or need a person.
+// Colour tracks what the state MEANS, not just that the states differ, and a
+// settled swap is the least interesting fact in the list:
+//
+//   done, nothing to do      neutral, recedes
+//   moving, money in flight  icy blue, calm
+//   waiting on a queue       lime, "not stuck, just early"
+//   a person must act        amber, warning without alarm
+//   money did not arrive     brand red, the only alarm
+//
+// Every pill also carries its own word, so the colour is reinforcement, never
+// the only signal (the list has to survive colour-blind readers and greyscale).
 const STATUS_STYLE: Record<string, string> = {
   completed: "bg-white/[0.06] text-ink-3",
   broadcasted: "bg-icy-100/10 text-icy-100",
-  processing: "bg-icy-500/10 text-icy-500",
-  pending: "bg-icy-500/10 text-icy-500",
-  failed: "bg-brand/10 text-brand",
-  needs_reconcile: "bg-brand/10 text-brand",
+  processing: "bg-icy-300/10 text-icy-300",
+  pending: "bg-icy-400/10 text-icy-400",
+  needs_reconcile: "bg-icy-500/10 text-icy-500",
+  failed: "bg-brand/15 text-brand",
 };
 
 const STATUS_FALLBACK = "bg-white/[0.06] text-ink-2";
