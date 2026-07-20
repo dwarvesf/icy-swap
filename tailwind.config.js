@@ -16,6 +16,10 @@ module.exports = {
           DEFAULT: "#23252C",
           100: "#1d2232",
         },
+        // The page sat on the same #23252C as the card, so the card had no
+        // edge to lift off and the whole view read as one flat sheet. This is
+        // the ground the card now casts its shadow onto.
+        page: "#16171c",
         brand: {
           500: "#e03e5e",
           600: "#c51f4a",

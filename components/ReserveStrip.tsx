@@ -1,26 +1,36 @@
-import { cn, commify, formatRate } from "@/lib/utils";
+import { commify, formatRate } from "@/lib/utils";
 
-const Tile = ({
+// ICY's rate is not a market quote nobody can check, it is a division anybody
+// can: reserve over circulating supply. The page used to state that in a
+// paragraph underneath three unrelated tiles. Showing the arithmetic instead
+// makes the trust argument self-evident and costs less room than explaining it.
+const Term = ({
   label,
   value,
   sub,
   loading,
-  className,
+  accent,
 }: {
   label: string;
   value: React.ReactNode;
   sub?: React.ReactNode;
   loading?: boolean;
-  className?: string;
+  accent?: boolean;
 }) => (
-  <div className={cn("py-4 px-5 border-white/5", className)}>
+  <div className="min-w-0">
     <dt className="text-[10.5px] font-medium tracking-[0.1em] text-ink-3 uppercase">
       {label}
     </dt>
     {loading ? (
-      <dd className="mt-1.5 w-24 h-5 rounded animate-pulse bg-white/10" />
+      <dd className="mt-1.5 w-28 h-6 rounded animate-pulse bg-white/10" />
     ) : (
-      <dd className="mt-1 font-mono text-[17px] tabular-nums tracking-tight">
+      <dd
+        className={
+          accent
+            ? "mt-1 font-mono text-[21px] tabular-nums tracking-tight text-icy-100"
+            : "mt-1 font-mono text-[17px] tabular-nums tracking-tight text-ink"
+        }
+      >
         {value}
         {sub ? (
           <span className="block mt-0.5 font-mono text-[11.5px] text-ink-3">
@@ -30,6 +40,18 @@ const Tile = ({
       </dd>
     )}
   </div>
+);
+
+// The operators carry the meaning, so they are sized to be read, not to
+// decorate. They are padded down onto the figures' line rather than centred on
+// the whole term, which would float them above the numbers they join.
+const Operator = ({ glyph }: { glyph: string }) => (
+  <span
+    aria-hidden
+    className="hidden md:block flex-shrink-0 pt-[26px] font-mono text-[17px] text-ink-3"
+  >
+    {glyph}
+  </span>
 );
 
 export const ReserveStrip = ({
@@ -66,45 +88,40 @@ export const ReserveStrip = ({
 
   return (
     <div className="border-b border-white/10">
-      {/* The rate is the headline, so it takes the full width on a phone and
-          the other two share the row below it. */}
-      <dl className="grid grid-cols-1 min-[360px]:grid-cols-2 md:grid-cols-3">
-        <Tile
-          className="border-b min-[360px]:col-span-2 md:col-span-1 md:border-b-0 md:border-r"
-          label="Rate"
-          loading={loading}
-          value={
-            <span className="text-icy-100">{formatRate(rate)} sats</span>
-          }
-          sub={`per ICY${usdPerIcy ? ` · $${usdPerIcy.toFixed(4)}` : ""}`}
-        />
-        <Tile
-          className="border-b min-[360px]:border-r min-[360px]:border-b-0"
+      {/* Screen readers get the claim as a sentence: the operator glyphs are
+          decorative to them, and visual order alone would not carry it. */}
+      <p className="sr-only">
+        The rate is the Bitcoin reserve divided by the ICY in circulation.
+      </p>
+      <dl className="flex flex-col gap-y-4 gap-x-5 py-4 px-5 md:flex-row md:items-start">
+        <Term
           label="Bitcoin reserve"
           loading={loading}
-          value={
-            <>
-              {(sats / 1e8).toFixed(5)}{" "}
-              <span className="text-[13px] text-ink-3">BTC</span>
-            </>
-          }
-          sub={`${commify(sats)} sats`}
+          value={commify(sats)}
+          sub={`sats · ${(sats / 1e8).toFixed(5)} BTC`}
         />
-        <Tile
+        <Operator glyph="÷" />
+        <Term
           label="ICY in circulation"
           loading={loading}
           value={commify(circulatingIcy.toFixed(2))}
           sub="held across all wallets"
         />
+        <Operator glyph="=" />
+        <Term
+          accent
+          label="Rate"
+          loading={loading}
+          value={`${formatRate(rate)} sats`}
+          sub={`per ICY${usdPerIcy ? ` · $${usdPerIcy.toFixed(4)}` : ""}`}
+        />
       </dl>
-      {/* The rate is not a market quote, it IS reserve/circulating. Saying so
-          is the trust argument. The two qualifiers are load-bearing: swaps
-          have a floor, and minting ahead of a top-up lowers the rate. */}
+      {/* Only the two qualifiers are left: the division above now says what
+          this paragraph used to spend three lines explaining. */}
       <p className="py-2.5 px-5 text-xs text-ink-3 border-t border-white/5">
-        The rate is the Bitcoin reserve divided by the circulating supply, so
-        redeeming does not change it{minIcy ? "" : "."}
-        {minIcy ? `, though swaps start at ${commify(minIcy)} ICY. ` : " "}
-        Issuing new ICY before the reserve grows will lower it.
+        Redeeming does not move the rate
+        {minIcy ? `, though swaps start at ${commify(minIcy)} ICY` : ""}. Issuing
+        new ICY before the reserve grows will lower it.
       </p>
     </div>
   );

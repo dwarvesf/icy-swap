@@ -47,7 +47,7 @@ export default function Home() {
         <meta property="twitter:image" content="/banner.png" />
       </Head>
 
-      <main className="flex flex-col items-center px-4 py-8 min-h-screen text-ink bg-foreground md:py-14">
+      <main className="flex flex-col items-center px-4 py-8 min-h-screen text-ink bg-page md:py-14">
         <div className="w-full max-w-4xl rounded-[14px] border border-white/10 bg-foreground shadow-[0_18px_50px_-20px_rgba(0,0,0,0.55)] overflow-hidden">
           <div className="flex flex-wrap gap-y-2 gap-x-3 items-center py-3.5 px-5 border-b border-white/10">
             <span className="flex gap-2.5 items-center text-[15px] font-semibold">

@@ -13,7 +13,9 @@ import { formatUnits } from "viem";
 // TODO: chain
 const theChain = base;
 
-const TOP_RESULT_COUNT = 8;
+// Six, not eight: the list ran taller than the swap card beside it and left a
+// column of dead space under the CTA. Recent means recent, not exhaustive.
+const TOP_RESULT_COUNT = 6;
 
 // Every status the backend can emit (internal/model: pending, processing,
 // broadcasted, completed, failed, needs_reconcile), in plain words. Anything
@@ -28,8 +30,11 @@ const STATUS_COPY: Record<string, string> = {
   needs_reconcile: "Needs review",
 };
 
+// A settled swap is not news. Eight loud teal pills was the list shouting its
+// least interesting fact, so "completed" recedes to the quiet default and the
+// colour is spent on the states that are still moving or need a person.
 const STATUS_STYLE: Record<string, string> = {
-  completed: "bg-icy-200/10 text-icy-200",
+  completed: "bg-white/[0.06] text-ink-3",
   broadcasted: "bg-icy-100/10 text-icy-100",
   processing: "bg-icy-500/10 text-icy-500",
   pending: "bg-icy-500/10 text-icy-500",

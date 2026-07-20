@@ -42,13 +42,19 @@ export default function App({ Component, pageProps }: any) {
         <ConnectKitProvider
           theme="midnight"
           customTheme={{
-            "--ck-font-family": "inherit",
+            // Named, not "inherit": ConnectKit resolves this outside the
+            // cascade our body font reaches, and inherit was falling through
+            // to the serif default.
+            "--ck-font-family": '"IBM Plex Sans", sans-serif',
             "--ck-connectbutton-border-radius": "8px",
             "--ck-connectbutton-font-size": "13px",
-            "--ck-connectbutton-color": "#fff",
-            "--ck-connectbutton-background": "#e03e5e",
-            "--ck-connectbutton-hover-background": "#c51f4a",
-            "--ck-connectbutton-active-background": "#aa0036",
+            // Deliberately NOT brand. The swap CTA is the page's one primary;
+            // a second red control in the header competes with it and says the
+            // same thing twice. This one recedes until it is needed.
+            "--ck-connectbutton-color": "#f2f3f5",
+            "--ck-connectbutton-background": "rgba(255,255,255,0.06)",
+            "--ck-connectbutton-hover-background": "rgba(255,255,255,0.11)",
+            "--ck-connectbutton-active-background": "rgba(255,255,255,0.14)",
           }}
         >
           <Toaster />

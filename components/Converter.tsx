@@ -56,26 +56,18 @@ const IcyBadge = (
   />
 );
 
-// satoshi.png is a black glyph on transparency, so on the dark pill it was
-// rendering as an all-but-invisible smudge. Force it white and seat it on the
-// bitcoin disc the design calls for, which is also what tells the two sides of
-// the swap apart at a glance.
+// satoshi.png is a black glyph on transparency and disappeared into the dark
+// pill. The real Bitcoin mark was already sitting unused in public/, and a sat
+// is a Bitcoin denomination, so it is both the honest badge and the one people
+// recognise without reading the label.
 const SatsBadge = (
-  <span
-    className="grid flex-shrink-0 place-items-center w-5 h-5 rounded-full"
-    style={{
-      background:
-        "radial-gradient(circle at 32% 28%, #ffcf8f, #f7931a 60%, #b8690a)",
-    }}
-  >
-    <Image
-      className="brightness-0 invert"
-      src="/satoshi.png"
-      width={11}
-      height={11}
-      alt=""
-    />
-  </span>
+  <Image
+    className="flex-shrink-0 rounded-full"
+    src="/bitcoin.png"
+    width={20}
+    height={20}
+    alt=""
+  />
 );
 
 const amountInput =
