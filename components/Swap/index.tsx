@@ -224,7 +224,6 @@ export const Swap = ({
     approving;
 
   const addressValid = isMainnetBtcAddress(btcAddress);
-  const amountTooSmall = Boolean(icy) && +icy < minIcy;
   // The ceiling the button has to respect. Reading the balance here as well as
   // in Converter costs no request: wagmi serves both from one query cache.
   const maxIcy = balance
@@ -266,13 +265,8 @@ export const Swap = ({
         satoshiPerUsd={satoshiPerUsd}
       />
 
-      {amountTooSmall ? (
-        <p role="alert" className="mt-3 text-xs text-brand">
-          The smallest swap is {commify(minIcy)} ICY.
-        </p>
-      ) : null}
       {!rate && !loadingRate ? (
-        <p role="alert" className="mt-3 text-xs text-brand">
+        <p role="alert" className="mt-3 text-xs text-brand-300">
           We could not reach the rate service, so swapping is paused. Refresh in
           a moment.
         </p>

@@ -30,24 +30,33 @@ const STATUS_COPY: Record<string, string> = {
   needs_reconcile: "Needs review",
 };
 
-// Colour tracks what the state MEANS, not just that the states differ, and a
-// settled swap is the least interesting fact in the list:
+// The list has three semantic tiers, not six states:
 //
-//   done, nothing to do      neutral, recedes
-//   moving, money in flight  icy blue, calm
-//   waiting on a queue       lime, "not stuck, just early"
-//   a person must act        amber, warning without alarm
-//   money did not arrive     brand red, the only alarm
+//   done, nothing to do        neutral, recedes (this is ~90% of rows)
+//   in flight, no action       one calm cyan for all of them
+//   act now                    the only two warm hues on the page
 //
-// Every pill also carries its own word, so the colour is reinforcement, never
-// the only signal (the list has to survive colour-blind readers and greyscale).
+// Nobody needs colour to tell broadcasted from processing from pending, the
+// pill's own word does that, so they share a colour and the warm hues stay
+// scarce enough to mean something. Spending the icy gradient on these was the
+// original mistake: it is decorative, and its lime and yellow steps sat ~20
+// degrees apart at near-identical lightness (0.826 vs 0.885), which is the
+// worst possible pairing for "ignorable" versus "a treasurer must act" and
+// collapses entirely under deuteranopia. Amber and red are the universal
+// attention pair and differ in lightness (0.615 vs 0.418), so the tiers still
+// rank in greyscale.
+//
+// Measured on the composited pill background: completed 5.45:1, in-flight
+// 7.85:1, needs_reconcile 7.41:1, failed 5.76:1. The previous set had
+// completed at 2.69:1 and failed at 3.09:1, so the alarm state was the least
+// readable text on the page.
 const STATUS_STYLE: Record<string, string> = {
-  completed: "bg-white/[0.06] text-ink-3",
+  completed: "bg-white/[0.06] text-ink-2",
   broadcasted: "bg-icy-100/10 text-icy-100",
-  processing: "bg-icy-300/10 text-icy-300",
-  pending: "bg-icy-400/10 text-icy-400",
-  needs_reconcile: "bg-icy-500/10 text-icy-500",
-  failed: "bg-brand/15 text-brand",
+  processing: "bg-icy-100/10 text-icy-100",
+  pending: "bg-icy-100/10 text-icy-100",
+  needs_reconcile: "bg-amber/10 text-amber",
+  failed: "bg-brand/15 text-brand-300",
 };
 
 const STATUS_FALLBACK = "bg-white/[0.06] text-ink-2";

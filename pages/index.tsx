@@ -110,7 +110,7 @@ export default function Home() {
             <a
               rel="noreferrer"
               target="_blank"
-              href="https://discord.gg/dwarvesv"
+              href="https://discord.gg/shjpS93Mp8"
               className="inline-flex items-center min-h-[24px] text-ink-2 hover:text-icy-100"
             >
               Discord

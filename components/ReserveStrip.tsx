@@ -78,7 +78,7 @@ export const ReserveStrip = ({
     return (
       <div
         role="alert"
-        className="py-4 px-5 text-sm border-b border-white/10 text-brand"
+        className="py-4 px-5 text-sm border-b border-white/10 text-brand-300"
       >
         Reserve figures are unavailable right now. Swapping is paused until the
         rate can be confirmed.
