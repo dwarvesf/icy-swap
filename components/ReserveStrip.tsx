@@ -61,9 +61,9 @@ export const ReserveStrip = ({
     <div className="border-b border-white/10">
       {/* The rate is the headline, so it takes the full width on a phone and
           the other two share the row below it. */}
-      <div className="grid grid-cols-2 md:grid-cols-3">
+      <div className="grid grid-cols-1 min-[360px]:grid-cols-2 md:grid-cols-3">
         <Tile
-          className="col-span-2 border-b md:col-span-1 md:border-b-0 md:border-r"
+          className="border-b min-[360px]:col-span-2 md:col-span-1 md:border-b-0 md:border-r"
           label="Rate"
           loading={loading}
           value={
@@ -72,7 +72,7 @@ export const ReserveStrip = ({
           sub={`per ICY${usdPerIcy ? ` · $${usdPerIcy.toFixed(4)}` : ""}`}
         />
         <Tile
-          className="border-r"
+          className="border-b min-[360px]:border-r min-[360px]:border-b-0"
           label="Bitcoin reserve"
           loading={loading}
           value={

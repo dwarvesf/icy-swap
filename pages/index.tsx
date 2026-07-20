@@ -48,14 +48,16 @@ export default function Home() {
 
       <main className="flex flex-col items-center px-4 py-8 min-h-screen text-white bg-foreground md:py-14">
         <div className="w-full max-w-4xl rounded-[14px] border border-white/10 bg-foreground shadow-[0_18px_50px_-20px_rgba(0,0,0,0.55)] overflow-hidden">
-          <div className="flex gap-3 items-center py-3.5 px-5 border-b border-white/10">
+          <div className="flex flex-wrap gap-y-2 gap-x-3 items-center py-3.5 px-5 border-b border-white/10">
             <span className="flex gap-2.5 items-center text-[15px] font-semibold">
               <Image src="/ICY.png" width={22} height={22} alt="" />
               $ICY
             </span>
             <span className="flex-1" />
-            <ChainSelector />
-            <ConnectKitButton />
+            <span className="flex gap-3 items-center ml-auto">
+              <ChainSelector />
+              <ConnectKitButton />
+            </span>
           </div>
 
           <ReserveStrip
@@ -89,7 +91,7 @@ export default function Home() {
               rel="noreferrer"
               target="_blank"
               href="https://earn.d.foundation/"
-              className="text-gray-400 hover:text-icy-100"
+              className="inline-flex items-center min-h-[24px] text-gray-400 hover:text-icy-100"
             >
               Radar
             </a>
@@ -97,7 +99,7 @@ export default function Home() {
               rel="noreferrer"
               target="_blank"
               href="https://discord.gg/dwarvesv"
-              className="text-gray-400 hover:text-icy-100"
+              className="inline-flex items-center min-h-[24px] text-gray-400 hover:text-icy-100"
             >
               Discord
             </a>

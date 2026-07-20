@@ -41,12 +41,14 @@ function Pill({ status }: { status: TX["status"] }) {
 }
 
 function Link({ href, children }: { href: string; children: React.ReactNode }) {
+  // py/-my grows the hit area to the 24px minimum without moving the layout;
+  // these sit shoulder to shoulder on a phone.
   return (
     <a
       href={href}
       rel="noreferrer"
       target="_blank"
-      className="hover:text-icy-100 hover:underline"
+      className="inline-flex items-center py-1 -my-1 min-h-[24px] hover:text-icy-100 hover:underline"
     >
       {children}
     </a>
@@ -104,7 +106,8 @@ export default function Txns() {
 
   const button = useMemo(() => {
     if (isSSR()) return null;
-    const className = "text-xs text-gray-500 hover:text-white";
+    const className =
+      "inline-flex items-center py-1 -my-1 min-h-[24px] text-xs text-gray-500 hover:text-white";
     if (isConnected)
       return (
         <button

@@ -186,7 +186,7 @@ export const Converter = ({
             placeholder="bc1..."
             aria-label="Destination Bitcoin address"
             aria-invalid={addressInvalid}
-            className="p-0 w-full font-mono text-[13px] bg-transparent border-none !ring-transparent !shadow-none outline-none focus:outline-none text-white placeholder:text-gray-600"
+            className="p-0 w-full min-h-[28px] font-mono text-[13px] bg-transparent border-none !ring-transparent !shadow-none outline-none focus:outline-none text-white placeholder:text-gray-600"
           />
         </Field>
         {addressInvalid ? (
@@ -198,22 +198,29 @@ export const Converter = ({
 
       {/* Fees used to sit behind a modal. People moving Bitcoin want the
           arithmetic before they commit, not one interaction away. */}
+      {/* Labels shrink, figures never wrap: on a 320px screen a long fee label
+          used to run into its own value. */}
       <dl className="grid gap-1.5 pt-3 mt-3.5 border-t border-white/5">
-        <div className="flex justify-between text-[12.5px] text-gray-400">
-          <dt>Rate</dt>
-          <dd className="font-mono tabular-nums text-white">
+        <div className="flex gap-3 justify-between items-baseline text-[12.5px] text-gray-400">
+          <dt className="min-w-0">Rate</dt>
+          <dd className="flex-shrink-0 font-mono whitespace-nowrap tabular-nums text-white">
             1 ICY = {commify(Math.floor(rate))} sats
           </dd>
         </div>
-        <div className="flex justify-between text-[12.5px] text-gray-400">
-          <dt>Service fee ({(feeRate ?? 0) * 100}%, min {commify(minSats || 0)} sats)</dt>
-          <dd className="font-mono tabular-nums text-white">
+        <div className="flex gap-3 justify-between items-baseline text-[12.5px] text-gray-400">
+          <dt className="min-w-0">
+            Service fee
+            <span className="block text-[11px] text-gray-500">
+              {(feeRate ?? 0) * 100}%, min {commify(minSats || 0)} sats
+            </span>
+          </dt>
+          <dd className="flex-shrink-0 font-mono whitespace-nowrap tabular-nums text-white">
             {serviceFee ? `−${commify(serviceFee)}` : "0"} sats
           </dd>
         </div>
-        <div className="flex justify-between pt-2 text-[13.5px] border-t border-white/5">
-          <dt>You receive</dt>
-          <dd className="font-mono tabular-nums text-icy-200">
+        <div className="flex gap-3 justify-between items-baseline pt-2 text-[13.5px] border-t border-white/5">
+          <dt className="min-w-0">You receive</dt>
+          <dd className="flex-shrink-0 font-mono whitespace-nowrap tabular-nums text-icy-200">
             {commify(receives)} sats
           </dd>
         </div>

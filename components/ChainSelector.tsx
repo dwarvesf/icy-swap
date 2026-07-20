@@ -22,7 +22,7 @@ export const ChainSelector = () => {
         <Listbox.Button
           className={({ open }) =>
             cln(
-              "space-x-2 h-full text-white hover:bg-white/5 active:bg-white/5 px-2 rounded-lg flex items-center transition-all duration-100 ease-in-out",
+              "space-x-2 min-h-[32px] text-white hover:bg-white/5 active:bg-white/5 px-2 rounded-lg flex items-center transition-all duration-100 ease-in-out",
               {
                 "bg-white/10": open,
               }
