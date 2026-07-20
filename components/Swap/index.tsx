@@ -18,10 +18,9 @@ import { abi as swapperABI } from "../../contract/swapper";
 import { Spinner } from "../Spinner";
 import toast from "react-hot-toast";
 import { useQueryClient } from "@tanstack/react-query";
-import { isMainnetBtcAddress } from "@/lib/btc";
+import { icyToWei, isMainnetBtcAddress } from "@/lib/btc";
 import { signatureRequest, signatureResponse } from "@/schemas";
 import { useApproveToken } from "@/hooks/useApproveToken";
-import { maxUint256 } from "viem";
 import { mutate } from "swr";
 import { cn, commify, fetchKeys } from "@/lib/utils";
 
@@ -78,27 +77,26 @@ export const Swap = ({
 
   const { isLoading: swapping } = useWaitForTransactionReceipt({ hash: data });
 
+  const [icy, setIcy] = useState("");
+  const [btc, setBtc] = useState("");
+  const [btcAddress, setBtcAddress] = useState("");
+
+  // Approve only what this swap spends, not an unlimited allowance. An older
+  // unlimited approval still satisfies the >= check, so nobody is forced to
+  // re-approve; new users simply stop granting one.
   const {
     confirmingApprove,
     approving,
     isApproved,
     approve: _approve,
-  } = useApproveToken(ICY_CONTRACT_ADDRESS, address, maxUint256);
-
-  const [icy, setIcy] = useState("");
-  const [btc, setBtc] = useState("");
-  const [btcAddress, setBtcAddress] = useState("");
+  } = useApproveToken(ICY_CONTRACT_ADDRESS, address, BigInt(icyToWei(icy)));
 
   const swap = useCallback(() => {
     if (!isApproved) return;
     if (!isMainnetBtcAddress(btcAddress)) {
       return;
     }
-    const icyAmount = (+icy * 10 ** 18).toLocaleString("fullwide", {
-      useGrouping: false,
-      maximumFractionDigits: 18,
-      notation: "standard",
-    });
+    const icyAmount = icyToWei(icy);
     const btcAmount = btc;
     if (+btcAmount < 1) {
       window.alert("Invalid BTC amount");
@@ -127,10 +125,19 @@ export const Swap = ({
         return signatureResponse.parse(await res.json());
       })
       .then(({ data }) => {
-        // Never sign amounts the user was not shown. If the backend came back
-        // with different figures the quote moved under them, so stop and let
-        // them read the new one.
-        if (data.icy_amount !== icyAmount || data.btc_amount !== btcAmount) {
+        // The backend derives the payout itself from the oracle (exact integer
+        // division) and signs that, so it legitimately differs from our
+        // float-derived figure by a few sats. Only a materially SMALLER payout
+        // is a broken promise; more is fine. Mirrors the backend's own 1%
+        // tolerance on the other side of the same comparison.
+        if (data.icy_amount !== icyAmount) {
+          throw new Error(
+            "The swap amount changed while we were preparing it. Try again."
+          );
+        }
+        const shown = BigInt(btcAmount);
+        const signed = BigInt(data.btc_amount);
+        if (signed * BigInt(100) < shown * BigInt(99)) {
           throw new Error(
             "The rate moved while we were preparing your swap. Check the new amount and try again."
           );
