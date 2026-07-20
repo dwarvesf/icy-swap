@@ -24,8 +24,21 @@ export const SWAP_REQUEST_TYPES = {
     { name: "icyAmount", type: "uint256" },
     { name: "btcAddress", type: "string" },
     { name: "deadline", type: "uint256" },
+    { name: "nonce", type: "bytes32" },
   ],
 } as const;
+
+/**
+ * One-shot randomness that makes each signature single-use: the backend
+ * remembers seen nonces for the deadline window, so a captured signature
+ * cannot be replayed even inside its own lifetime.
+ */
+export function swapRequestNonce(): `0x${string}` {
+  const bytes = crypto.getRandomValues(new Uint8Array(32));
+  return `0x${Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join(
+    ""
+  )}`;
+}
 
 /**
  * The backend rejects a deadline further out than 5 minutes, so a captured
