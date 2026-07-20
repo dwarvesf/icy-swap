@@ -8,6 +8,9 @@
 // If the swap widget is ever legitimately embedded (e.g. inside icy.so), relax
 // frame-ancestors to that specific origin instead of 'none'.
 const securityHeaders = [
+  // A first-visit plain-HTTP request to a wallet dapp is the highest-value
+  // phish there is: MITM serves a pixel-perfect fake swap page.
+  { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
   { key: 'X-Frame-Options', value: 'DENY' },
   { key: 'Content-Security-Policy', value: "frame-ancestors 'none'" },
   { key: 'X-Content-Type-Options', value: 'nosniff' },

@@ -37,3 +37,4 @@ next-env.d.ts
 
 # yarn berry runtime dirs (nodeLinker: node-modules keeps deps in /node_modules)
 .yarn/
+.env

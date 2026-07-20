@@ -101,7 +101,12 @@ export const Swap = ({
 
   const swap = useCallback(async () => {
     if (!isApproved) return;
-    if (!isMainnetBtcAddress(btcAddress)) {
+    // Validation already trims, so an address with a pasted trailing newline
+    // passes and then gets signed and burned WITH the whitespace. Trim once
+    // here so the string that is validated, signed, sent and paid out is one
+    // and the same.
+    const payoutAddress = btcAddress.trim();
+    if (!isMainnetBtcAddress(payoutAddress)) {
       return;
     }
     const icyAmount = icyToWei(icy);
@@ -126,7 +131,7 @@ export const Swap = ({
         primaryType: "SwapRequest",
         message: {
           icyAmount: BigInt(icyAmount),
-          btcAddress,
+          btcAddress: payoutAddress,
           deadline: walletDeadline,
         },
       });
@@ -147,7 +152,7 @@ export const Swap = ({
       },
       body: JSON.stringify(
         signatureRequest.parse({
-          btc_address: btcAddress,
+          btc_address: payoutAddress,
           icy_amount: icyAmount,
           btc_amount: btcAmount,
           wallet_signature: walletSignature,
@@ -180,7 +185,7 @@ export const Swap = ({
         return writeContractAsync(
           getContractConfig(
             BigInt(data.icy_amount),
-            btcAddress,
+            payoutAddress,
             BigInt(data.btc_amount),
             BigInt(data.nonce),
             BigInt(data.deadline),

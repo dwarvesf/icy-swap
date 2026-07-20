@@ -53,3 +53,23 @@ assert.equal(caretAfterDigits("1,793,131", 99), 9); // never past the end
 }
 
 console.log("format.check: all assertions passed");
+
+// icyToWei must be exact. The float version returned 1793131120000000200000000
+// for "1793131.12", i.e. 200,000,000 wei ABOVE the true value, so Max asked for
+// more than the wallet held and the swap reverted on chain after gas.
+{
+  const { icyToWei } = await import("./btc.ts");
+  const exact = (v: string) => {
+    const [i, f = ""] = v.split(".");
+    return (i + (f + "0".repeat(18)).slice(0, 18)).replace(/^0+(?=\d)/, "");
+  };
+  for (const v of ["1793131.12", "33333.333333", "51230.23", "45", "0.01"]) {
+    assert.equal(icyToWei(v), exact(v), `icyToWei drifted on ${v}`);
+  }
+  // More than 18 decimals used to yield "1.5", which threw in BigInt().
+  assert.doesNotThrow(() => BigInt(icyToWei("0.0000000000000000015")));
+  assert.equal(icyToWei("0"), "0");
+  assert.equal(icyToWei("abc"), "0");
+}
+
+console.log("format.check: icyToWei exact");
