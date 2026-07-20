@@ -25,7 +25,7 @@ const Field = ({
       { "border-brand/60 focus-within:border-brand/60": invalid }
     )}
   >
-    <div className="flex gap-2 justify-between items-center mb-1.5 text-[11.5px] text-gray-400">
+    <div className="flex gap-2 justify-between items-center mb-1.5 text-[11.5px] text-ink-3">
       <span>{label}</span>
       {aside}
     </div>
@@ -33,21 +33,53 @@ const Field = ({
   </div>
 );
 
-const Token = ({ icon, symbol }: { icon: string; symbol: string }) => (
+const Token = ({
+  badge,
+  symbol,
+}: {
+  badge: React.ReactNode;
+  symbol: string;
+}) => (
   <span className="flex flex-shrink-0 gap-2 items-center py-1 pr-3 pl-1.5 text-[13.5px] font-medium rounded-full bg-white/[0.06]">
-    <Image
-      className="flex-shrink-0 rounded-full"
-      src={icon}
-      width={20}
-      height={20}
-      alt=""
-    />
+    {badge}
     {symbol}
   </span>
 );
 
+const IcyBadge = (
+  <Image
+    className="flex-shrink-0 rounded-full"
+    src="/ICY.png"
+    width={20}
+    height={20}
+    alt=""
+  />
+);
+
+// satoshi.png is a black glyph on transparency, so on the dark pill it was
+// rendering as an all-but-invisible smudge. Force it white and seat it on the
+// bitcoin disc the design calls for, which is also what tells the two sides of
+// the swap apart at a glance.
+const SatsBadge = (
+  <span
+    className="grid flex-shrink-0 place-items-center w-5 h-5 rounded-full"
+    style={{
+      background:
+        "radial-gradient(circle at 32% 28%, #ffcf8f, #f7931a 60%, #b8690a)",
+    }}
+  >
+    <Image
+      className="brightness-0 invert"
+      src="/satoshi.png"
+      width={11}
+      height={11}
+      alt=""
+    />
+  </span>
+);
+
 const amountInput =
-  "w-full min-w-0 p-0 font-mono text-[26px] tabular-nums tracking-tight bg-transparent border-none !ring-transparent !shadow-none outline-none focus:outline-none focus-visible:outline-none text-white placeholder:text-gray-500";
+  "w-full min-w-0 p-0 font-mono text-[26px] tabular-nums tracking-tight bg-transparent border-none !ring-transparent !shadow-none outline-none focus:outline-none focus-visible:outline-none text-ink placeholder:text-ink-3";
 
 export const Converter = ({
   tokenA,
@@ -116,7 +148,7 @@ export const Converter = ({
         label="You pay"
         aside={
           balance ? (
-            <span className="text-gray-400">
+            <span className="text-ink-3">
               Balance {commify(formattedBalance)}
               <button
                 type="button"
@@ -125,13 +157,13 @@ export const Converter = ({
                   setAmountTokenA(formattedBalance);
                   setAmountTokenB(`${Math.floor(+formattedBalance * rate)}`);
                 }}
-                className="py-0.5 px-1.5 ml-2 text-[10.5px] font-medium tracking-wider text-gray-300 uppercase rounded border border-white/10 hover:border-icy-100 hover:text-icy-100 focus-visible:border-icy-100"
+                className="py-0.5 px-1.5 ml-2 text-[10.5px] font-medium tracking-wider text-ink-2 uppercase rounded border border-white/10 hover:border-icy-100 hover:text-icy-100 focus-visible:border-icy-100"
               >
                 Max
               </button>
             </span>
           ) : minIcy ? (
-            <span className="text-gray-400">
+            <span className="text-ink-3">
               Minimum {commify(minIcy)} ICY
             </span>
           ) : null
@@ -166,13 +198,13 @@ export const Converter = ({
               })
             }
           >
-            <Token icon="/ICY.png" symbol="ICY" />
+            <Token badge={IcyBadge} symbol="ICY" />
           </button>
         </div>
       </Field>
 
       <div className="flex relative z-10 -my-3.5 justify-center">
-        <span className="grid place-items-center w-7 h-7 text-gray-300 rounded-full border bg-foreground-100 border-white/10">
+        <span className="grid place-items-center w-7 h-7 text-ink-2 rounded-full border bg-foreground-100 border-white/10">
           <ArrowDownIcon width={14} height={14} />
         </span>
       </div>
@@ -194,7 +226,7 @@ export const Converter = ({
             aria-label="Satoshi before fee"
             className={amountInput}
           />
-          <Token icon="/satoshi.png" symbol="sats" />
+          <Token badge={SatsBadge} symbol="sats" />
         </div>
       </Field>
 
@@ -203,7 +235,7 @@ export const Converter = ({
           label="Bitcoin address"
           invalid={addressInvalid}
           aside={
-            <span className="text-right text-gray-400">
+            <span className="text-right text-ink-3">
               Not your Base address
             </span>
           }
@@ -216,14 +248,14 @@ export const Converter = ({
             aria-label="Destination Bitcoin address"
             aria-invalid={addressInvalid}
             aria-describedby={addressInvalid ? "btc-address-error" : undefined}
-            className="p-0 w-full min-h-[28px] font-mono text-[13px] bg-transparent border-none !ring-transparent !shadow-none outline-none focus:outline-none text-white placeholder:text-gray-400"
+            className="p-0 w-full min-h-[28px] font-mono text-[13px] bg-transparent border-none !ring-transparent !shadow-none outline-none focus:outline-none text-ink placeholder:text-ink-3"
           />
         </Field>
         {addressInvalid ? (
           <p
             id="btc-address-error"
             role="alert"
-            className="mt-1.5 text-xs text-red-400"
+            className="mt-1.5 text-xs text-brand"
           >
             This is not a Bitcoin mainnet address. Test network addresses
             (starting tb1, bcrt1, m or n) cannot receive a payout.
@@ -236,20 +268,20 @@ export const Converter = ({
           shrink and figures never wrap, so a long label cannot run into its
           own value at 320px. */}
       <dl className="grid gap-1.5 pt-3 mt-3.5 border-t border-white/5">
-        <div className="flex gap-3 justify-between items-baseline text-[12.5px] text-gray-400">
+        <div className="flex gap-3 justify-between items-baseline text-[12.5px] text-ink-2">
           <dt className="min-w-0">Rate</dt>
-          <dd className="flex-shrink-0 font-mono whitespace-nowrap tabular-nums text-white">
+          <dd className="flex-shrink-0 font-mono whitespace-nowrap tabular-nums text-ink">
             1 ICY = {formatRate(rate)} sats
           </dd>
         </div>
-        <div className="flex gap-3 justify-between items-baseline text-[12.5px] text-gray-400">
+        <div className="flex gap-3 justify-between items-baseline text-[12.5px] text-ink-2">
           <dt className="min-w-0">
             Service fee
-            <span className="block text-[11px] text-gray-400">
+            <span className="block text-[11px] text-ink-3">
               {(feeRate ?? 0) * 100}%, minimum {commify(minSats || 0)} sats
             </span>
           </dt>
-          <dd className="flex-shrink-0 font-mono whitespace-nowrap tabular-nums text-white">
+          <dd className="flex-shrink-0 font-mono whitespace-nowrap tabular-nums text-ink">
             {serviceFee ? `−${commify(serviceFee)}` : "0"} sats
           </dd>
         </div>
@@ -257,7 +289,7 @@ export const Converter = ({
           <dt className="min-w-0">
             You receive
             {usd ? (
-              <span className="block text-[11px] text-gray-400">
+              <span className="block text-[11px] text-ink-3">
                 about ${usd.toFixed(2)}
               </span>
             ) : null}
@@ -269,15 +301,15 @@ export const Converter = ({
       </dl>
 
       {showEffective ? (
-        <p className="mt-2 text-[11.5px] text-gray-400">
+        <p className="mt-2 text-[11.5px] text-ink-3">
           At this size the minimum fee dominates, so you get{" "}
-          <span className="font-mono text-gray-300">
+          <span className="font-mono text-ink-2">
             {formatRate(effectiveRate)} sats
           </span>{" "}
           per ICY rather than {formatRate(rate)}. Swapping more improves it.
         </p>
       ) : null}
-      <p className="mt-2 text-[11.5px] text-gray-400">
+      <p className="mt-2 text-[11.5px] text-ink-3">
         This is the amount that lands at your address. The Bitcoin network fee
         is paid by the treasury and does not come out of it.
       </p>

@@ -25,6 +25,15 @@ module.exports = {
           1000: "#5c0000",
           DEFAULT: "#e03e5e",
         },
+        // The design's three-level text ramp on the dark ground. Tailwind's
+        // gray-400 was standing in for all three, so a field label and its
+        // value came out the same colour and the hierarchy flattened. The
+        // greys are also cooler than Tailwind's, which read green next to icy.
+        ink: {
+          DEFAULT: "#f2f3f5",
+          2: "#a8adba",
+          3: "#6f7686",
+        },
         icy: {
           100: "#95E3E7",
           200: "#88EFD9",

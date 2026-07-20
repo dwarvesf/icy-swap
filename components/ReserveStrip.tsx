@@ -14,7 +14,7 @@ const Tile = ({
   className?: string;
 }) => (
   <div className={cn("py-4 px-5 border-white/5", className)}>
-    <dt className="text-[10.5px] font-medium tracking-[0.1em] text-gray-400 uppercase">
+    <dt className="text-[10.5px] font-medium tracking-[0.1em] text-ink-3 uppercase">
       {label}
     </dt>
     {loading ? (
@@ -23,7 +23,7 @@ const Tile = ({
       <dd className="mt-1 font-mono text-[17px] tabular-nums tracking-tight">
         {value}
         {sub ? (
-          <span className="block mt-0.5 font-mono text-[11.5px] text-gray-400">
+          <span className="block mt-0.5 font-mono text-[11.5px] text-ink-3">
             {sub}
           </span>
         ) : null}
@@ -56,7 +56,7 @@ export const ReserveStrip = ({
     return (
       <div
         role="alert"
-        className="py-4 px-5 text-sm border-b border-white/10 text-red-400"
+        className="py-4 px-5 text-sm border-b border-white/10 text-brand"
       >
         Reserve figures are unavailable right now. Swapping is paused until the
         rate can be confirmed.
@@ -85,7 +85,7 @@ export const ReserveStrip = ({
           value={
             <>
               {(sats / 1e8).toFixed(5)}{" "}
-              <span className="text-[13px] text-gray-400">BTC</span>
+              <span className="text-[13px] text-ink-3">BTC</span>
             </>
           }
           sub={`${commify(sats)} sats`}
@@ -100,7 +100,7 @@ export const ReserveStrip = ({
       {/* The rate is not a market quote, it IS reserve/circulating. Saying so
           is the trust argument. The two qualifiers are load-bearing: swaps
           have a floor, and minting ahead of a top-up lowers the rate. */}
-      <p className="py-2.5 px-5 text-xs text-gray-400 border-t border-white/5">
+      <p className="py-2.5 px-5 text-xs text-ink-3 border-t border-white/5">
         The rate is the Bitcoin reserve divided by the circulating supply, so
         redeeming does not change it{minIcy ? "" : "."}
         {minIcy ? `, though swaps start at ${commify(minIcy)} ICY. ` : " "}

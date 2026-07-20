@@ -22,7 +22,7 @@ export const ChainSelector = () => {
         <Listbox.Button
           className={({ open }) =>
             cln(
-              "space-x-2 min-h-[32px] text-white hover:bg-white/5 active:bg-white/5 px-2 rounded-lg flex items-center transition-all duration-100 ease-in-out",
+              "space-x-2 min-h-[32px] text-ink hover:bg-white/5 active:bg-white/5 px-2 rounded-lg flex items-center transition-all duration-100 ease-in-out",
               {
                 "bg-white/10": open,
               }
@@ -42,9 +42,9 @@ export const ChainSelector = () => {
           )}
           <ChevronDownIcon width={20} height={20} />
         </Listbox.Button>
-        <Listbox.Options className="absolute left-0 top-full p-2 rounded-lg border border-gray-700 shadow translate-y-2 min-w-[200px] bg-foreground-100">
+        <Listbox.Options className="absolute left-0 top-full p-2 rounded-lg border border-white/10 shadow translate-y-2 min-w-[200px] bg-foreground-100">
           <Listbox.Option
-            className="flex items-center p-2 space-x-2 text-white rounded-lg transition-all duration-100 ease-in-out cursor-pointer hover:bg-white/5"
+            className="flex items-center p-2 space-x-2 text-ink rounded-lg transition-all duration-100 ease-in-out cursor-pointer hover:bg-white/5"
             value={theChain.id}
           >
             <Image width={16} height={16} src="/base.webp" alt="" />

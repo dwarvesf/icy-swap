@@ -33,11 +33,11 @@ const STATUS_STYLE: Record<string, string> = {
   broadcasted: "bg-icy-100/10 text-icy-100",
   processing: "bg-icy-500/10 text-icy-500",
   pending: "bg-icy-500/10 text-icy-500",
-  failed: "bg-red-400/10 text-red-400",
-  needs_reconcile: "bg-red-400/10 text-red-400",
+  failed: "bg-brand/10 text-brand",
+  needs_reconcile: "bg-brand/10 text-brand",
 };
 
-const STATUS_FALLBACK = "bg-white/[0.06] text-gray-300";
+const STATUS_FALLBACK = "bg-white/[0.06] text-ink-2";
 
 function humanizeStatus(status: string) {
   return status.replace(/_/g, " ");
@@ -83,11 +83,11 @@ function Row({ tx }: { tx: TX }) {
         <summary className="grid grid-cols-[1fr_auto] gap-y-1 gap-x-2.5 py-2.5 px-3 cursor-pointer list-none marker:hidden focus-visible:ring-2 focus-visible:ring-icy-100 rounded-[9px]">
           <span className="font-mono text-[13px] tabular-nums">
             {commify((+icy).toFixed(2))} ICY
-            <span className="mx-1.5 text-gray-400">→</span>
+            <span className="mx-1.5 text-ink-3">→</span>
             {commify(tx.total)} sats
           </span>
           <Pill status={tx.status} />
-          <span className="flex flex-wrap col-span-2 gap-x-2.5 font-mono text-[11px] text-gray-400">
+          <span className="flex flex-wrap col-span-2 gap-x-2.5 font-mono text-[11px] text-ink-3">
             <time dateTime={tx.created_at} title={created.toISOString()}>
               {formatDistanceToNowStrict(created)} ago
             </time>
@@ -96,16 +96,16 @@ function Row({ tx }: { tx: TX }) {
           </span>
         </summary>
 
-        <dl className="grid gap-1 py-2.5 px-3 mx-3 mb-2.5 text-[11.5px] border-t border-white/5 text-gray-400">
+        <dl className="grid gap-1 py-2.5 px-3 mx-3 mb-2.5 text-[11.5px] border-t border-white/5 text-ink-2">
           <div className="flex gap-3 justify-between">
             <dt>Converted</dt>
-            <dd className="font-mono tabular-nums text-white">
+            <dd className="font-mono tabular-nums text-ink">
               {commify(tx.subtotal)} sats
             </dd>
           </div>
           <div className="flex gap-3 justify-between">
             <dt>Service fee</dt>
-            <dd className="font-mono tabular-nums text-white">
+            <dd className="font-mono tabular-nums text-ink">
               −{commify(tx.service_fee)} sats
             </dd>
           </div>
@@ -162,7 +162,7 @@ export default function Txns() {
   const button = useMemo(() => {
     if (isSSR()) return null;
     const className =
-      "inline-flex items-center py-1 -my-1 min-h-[24px] text-xs text-gray-400 hover:text-white";
+      "inline-flex items-center py-1 -my-1 min-h-[24px] text-xs text-ink-3 hover:text-ink";
     if (isConnected)
       return (
         <button
@@ -189,7 +189,7 @@ export default function Txns() {
   return (
     <div className="flex flex-col">
       <div className="flex justify-between items-center mb-3">
-        <h2 className="text-[10.5px] font-semibold tracking-[0.1em] text-gray-400 uppercase">
+        <h2 className="text-[10.5px] font-semibold tracking-[0.1em] text-ink-3 uppercase">
           Recent swaps
         </h2>
         {button}
@@ -202,12 +202,12 @@ export default function Txns() {
           ))}
         </ul>
       ) : error ? (
-        <p className="text-sm text-gray-400">
+        <p className="text-sm text-ink-3">
           Could not load recent swaps. They are still on chain, only this list is
           unavailable.
         </p>
       ) : rows.length === 0 ? (
-        <p className="text-sm text-gray-400">
+        <p className="text-sm text-ink-3">
           {viewSelfTxs
             ? "You have not swapped yet. Your swaps will show up here."
             : "No swaps yet."}
