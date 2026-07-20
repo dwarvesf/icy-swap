@@ -2,12 +2,13 @@ import {
   useAccount,
   useBalance,
   useBlockNumber,
+  useSignTypedData,
   useWaitForTransactionReceipt,
   useWriteContract,
 } from "wagmi";
 import { Converter } from "../Converter";
 import { useCallback, useEffect, useState } from "react";
-import cln from "classnames";
+import { ConnectKitButton } from "connectkit";
 import {
   API_KEY,
   BASE_URL,
@@ -18,12 +19,19 @@ import { abi as swapperABI } from "../../contract/swapper";
 import { Spinner } from "../Spinner";
 import toast from "react-hot-toast";
 import { useQueryClient } from "@tanstack/react-query";
-import { validate as validateBtcAddr } from "bitcoin-address-validation";
+import { icyToWei, isMainnetBtcAddress } from "@/lib/btc";
+import {
+  SWAP_REQUEST_DOMAIN,
+  SWAP_REQUEST_TYPES,
+  swapRequestDeadline,
+} from "@/lib/walletAuth";
 import { signatureRequest, signatureResponse } from "@/schemas";
 import { useApproveToken } from "@/hooks/useApproveToken";
-import { maxUint256 } from "viem";
 import { mutate } from "swr";
-import { fetchKeys } from "@/lib/utils";
+import { cn, commify, fetchKeys } from "@/lib/utils";
+
+const cta =
+  "mt-4 w-full rounded-[10px] py-3 text-[14.5px] font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-icy-100";
 
 const getContractConfig = (
   icy: BigInt,
@@ -44,11 +52,15 @@ export const Swap = ({
   minIcy,
   feeRate,
   minSats,
+  satoshiPerUsd,
+  loadingRate,
 }: {
   rate: number;
   minIcy: number;
   feeRate: number;
   minSats: string;
+  satoshiPerUsd: number;
+  loadingRate: boolean;
 }) => {
   const queryClient = useQueryClient();
   const { data: blockNumber } = useBlockNumber({ watch: true });
@@ -70,34 +82,59 @@ export const Swap = ({
   } = useWriteContract();
 
   const { isLoading: swapping } = useWaitForTransactionReceipt({ hash: data });
-
-  const {
-    confirmingApprove,
-    approving,
-    isApproved,
-    approve: _approve,
-  } = useApproveToken(ICY_CONTRACT_ADDRESS, address, maxUint256);
+  const { signTypedDataAsync } = useSignTypedData();
 
   const [icy, setIcy] = useState("");
   const [btc, setBtc] = useState("");
   const [btcAddress, setBtcAddress] = useState("");
 
-  const swap = useCallback(() => {
+  // Approve only what this swap spends, not an unlimited allowance. An older
+  // unlimited approval still satisfies the >= check, so nobody is forced to
+  // re-approve; new users simply stop granting one.
+  const {
+    confirmingApprove,
+    approving,
+    isApproved,
+    approve: _approve,
+  } = useApproveToken(ICY_CONTRACT_ADDRESS, address, BigInt(icyToWei(icy)));
+
+  const swap = useCallback(async () => {
     if (!isApproved) return;
-    if (!validateBtcAddr(btcAddress)) {
+    if (!isMainnetBtcAddress(btcAddress)) {
       return;
     }
-    const icyAmount = (+icy * 10 ** 18).toLocaleString("fullwide", {
-      useGrouping: false,
-      maximumFractionDigits: 18,
-      notation: "standard",
-    });
+    const icyAmount = icyToWei(icy);
     const btcAmount = btc;
     if (+btcAmount < 1) {
       window.alert("Invalid BTC amount");
       return;
     }
     setGeneratingSignature(true);
+
+    // Prove who is asking before asking. The user signs the amount and payout
+    // address with the wallet that will call swap(), so the backend can
+    // recover a real caller identity instead of trusting a key that ships in
+    // this bundle. Free (no gas, no transaction) but it is a wallet prompt, so
+    // it happens before the "Swapping..." toast to keep the order honest.
+    let walletSignature: string;
+    const walletDeadline = swapRequestDeadline();
+    try {
+      walletSignature = await signTypedDataAsync({
+        domain: SWAP_REQUEST_DOMAIN,
+        types: SWAP_REQUEST_TYPES,
+        primaryType: "SwapRequest",
+        message: {
+          icyAmount: BigInt(icyAmount),
+          btcAddress,
+          deadline: walletDeadline,
+        },
+      });
+    } catch (e) {
+      // Rejecting the prompt is a normal choice, not a failure to report loudly.
+      setGeneratingSignature(false);
+      return;
+    }
+
     toast("Swapping...", {
       position: "bottom-center",
     });
@@ -112,13 +149,34 @@ export const Swap = ({
           btc_address: btcAddress,
           icy_amount: icyAmount,
           btc_amount: btcAmount,
+          wallet_signature: walletSignature,
+          wallet_deadline: Number(walletDeadline),
         })
       ),
     })
-      .then((res) => res.json())
-      .then((res) => {
-        const { data } = signatureResponse.parse(res);
-        writeContractAsync(
+      .then(async (res) => {
+        if (!res.ok) throw new Error(`Signature request failed (${res.status})`);
+        return signatureResponse.parse(await res.json());
+      })
+      .then(({ data }) => {
+        // The backend derives the payout itself from the oracle (exact integer
+        // division) and signs that, so it legitimately differs from our
+        // float-derived figure by a few sats. Only a materially SMALLER payout
+        // is a broken promise; more is fine. Mirrors the backend's own 1%
+        // tolerance on the other side of the same comparison.
+        if (data.icy_amount !== icyAmount) {
+          throw new Error(
+            "The swap amount changed while we were preparing it. Try again."
+          );
+        }
+        const shown = BigInt(btcAmount);
+        const signed = BigInt(data.btc_amount);
+        if (signed * BigInt(100) < shown * BigInt(99)) {
+          throw new Error(
+            "The rate moved while we were preparing your swap. Check the new amount and try again."
+          );
+        }
+        return writeContractAsync(
           getContractConfig(
             BigInt(data.icy_amount),
             btcAddress,
@@ -127,24 +185,31 @@ export const Swap = ({
             BigInt(data.deadline),
             `0x${data.signature}`
           )
-        )
-          .then(async () => {
-            setIcy("");
-            setBtc("");
-            toast.success("Success", { position: "bottom-center" });
+        );
+      })
+      .then(async () => {
+        setIcy("");
+        setBtc("");
+        toast.success("Success", { position: "bottom-center" });
 
-            // revalidate txns data
-            mutate([fetchKeys.TXNS, true, address]);
-            mutate([fetchKeys.TXNS, false, address]);
-          })
-          .catch((e) => {
-            console.error(e);
-          })
-          .finally(() => {
-            setGeneratingSignature(false);
-          });
+        // revalidate txns data
+        mutate([fetchKeys.TXNS, true, address]);
+        mutate([fetchKeys.TXNS, false, address]);
+      })
+      .catch((e) => {
+        console.error(e);
+        toast.error(
+          e instanceof Error && e.message
+            ? e.message
+            : "The swap could not be prepared. Nothing was sent.",
+          { position: "bottom-center" }
+        );
+      })
+      // One terminal finally, so any failure above still releases the button.
+      .finally(() => {
+        setGeneratingSignature(false);
       });
-  }, [icy, btc, btcAddress, isApproved, writeContractAsync, address]);
+  }, [icy, btc, btcAddress, isApproved, writeContractAsync, address, signTypedDataAsync]);
 
   const approve = () => {
     _approve?.();
@@ -157,52 +222,78 @@ export const Swap = ({
     confirmingApprove ||
     approving;
 
-  return (
-    <div className="flex flex-col justify-center items-center">
-      <div>
-        <Converter
-          tokenA={icy}
-          setAmountTokenA={setIcy}
-          tokenB={btc}
-          setAmountTokenB={setBtc}
-          addressTokenB={btcAddress}
-          setAddressTokenB={setBtcAddress}
-          rate={rate}
-          feeRate={feeRate}
-          minSats={minSats}
-        />
-      </div>
-      <button
-        type="button"
-        className={cln("w-max mt-10 text-white px-5 py-2.5 rounded-sm", {
-          "bg-gray-400":
-            +icy < minIcy || !btcAddress || !validateBtcAddr(btcAddress),
-          "bg-brand":
-            +icy >= minIcy && btcAddress && validateBtcAddr(btcAddress),
-        })}
-        disabled={loading || +icy < minIcy || !validateBtcAddr(btcAddress)}
-        onClick={!isApproved ? approve : swap}
-      >
-        {loading ? (
-          <Spinner className="w-5 h-5" />
-        ) : !validateBtcAddr(btcAddress) ? (
-          "Invalid BTC address"
-        ) : +icy < minIcy ? (
-          `Min swap amount: ${minIcy} $ICY`
-        ) : !isApproved ? (
-          "Approve"
-        ) : !rate ? (
-          "Cannot fetch rate"
-        ) : (
-          "Swap"
-        )}
-      </button>
+  const addressValid = isMainnetBtcAddress(btcAddress);
+  const amountTooSmall = Boolean(icy) && +icy < minIcy;
+  const ready =
+    Boolean(rate) && Boolean(address) && +icy >= minIcy && addressValid;
 
-      {/* {isOutOfMoneyError ? ( */}
-      {/*   <p className="mt-2 font-medium text-red-400"> */}
-      {/*     Error: contract out of money */}
-      {/*   </p> */}
-      {/* ) : null} */}
+  // A control says what it does. Anything the user still has to fix is stated
+  // next to the field that caused it, not written over the button label.
+  const label = () => {
+    if (loadingRate) return "Loading the rate";
+    if (!rate) return "Rate unavailable";
+    if (!address) return "Connect a wallet to swap";
+    if (!icy || +icy <= 0) return "Enter an amount";
+    if (!isApproved) return "Approve ICY";
+    return `Swap ${commify(icy)} ICY for Bitcoin`;
+  };
+
+  return (
+    <div className="flex flex-col">
+      <Converter
+        tokenA={icy}
+        setAmountTokenA={setIcy}
+        tokenB={btc}
+        setAmountTokenB={setBtc}
+        addressTokenB={btcAddress}
+        setAddressTokenB={setBtcAddress}
+        rate={rate}
+        feeRate={feeRate}
+        minSats={minSats}
+        minIcy={minIcy}
+        satoshiPerUsd={satoshiPerUsd}
+      />
+
+      {amountTooSmall ? (
+        <p role="alert" className="mt-3 text-xs text-red-400">
+          The smallest swap is {commify(minIcy)} ICY.
+        </p>
+      ) : null}
+      {!rate && !loadingRate ? (
+        <p role="alert" className="mt-3 text-xs text-red-400">
+          We could not reach the rate service, so swapping is paused. Refresh in
+          a moment.
+        </p>
+      ) : null}
+
+      {/* Disconnected is an action, not an error: render a real Connect
+          control rather than a greyed button telling them to connect. */}
+      {!address && !loadingRate ? (
+        <ConnectKitButton.Custom>
+          {({ show }) => (
+            <button
+              type="button"
+              onClick={show}
+              className={cn(cta, "bg-brand-600 text-white hover:bg-brand-700")}
+            >
+              Connect a wallet to swap
+            </button>
+          )}
+        </ConnectKitButton.Custom>
+      ) : (
+        <button
+          type="button"
+          className={cn(cta, {
+            "bg-white/[0.07] text-gray-400 cursor-not-allowed":
+              !ready || loading,
+            "bg-brand-600 text-white hover:bg-brand-700": ready && !loading,
+          })}
+          disabled={loading || !ready}
+          onClick={!isApproved ? approve : swap}
+        >
+          {loading ? <Spinner className="mx-auto w-5 h-5" /> : label()}
+        </button>
+      )}
     </div>
   );
 };
