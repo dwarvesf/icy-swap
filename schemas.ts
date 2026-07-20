@@ -21,6 +21,11 @@ export const signatureRequest = z.object({
   btc_address: z.string(),
   icy_amount: z.string(),
   btc_amount: z.string(),
+  // EIP-712 proof that the caller controls the wallet that will call swap().
+  // The backend recovers the address from it; the ApiKey cannot identify
+  // anyone because it ships inside the browser bundle.
+  wallet_signature: z.string(),
+  wallet_deadline: z.number(),
 });
 
 export const signatureResponse = z.object({

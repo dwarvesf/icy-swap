@@ -2,6 +2,7 @@ import {
   useAccount,
   useBalance,
   useBlockNumber,
+  useSignTypedData,
   useWaitForTransactionReceipt,
   useWriteContract,
 } from "wagmi";
@@ -19,6 +20,11 @@ import { Spinner } from "../Spinner";
 import toast from "react-hot-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { icyToWei, isMainnetBtcAddress } from "@/lib/btc";
+import {
+  SWAP_REQUEST_DOMAIN,
+  SWAP_REQUEST_TYPES,
+  swapRequestDeadline,
+} from "@/lib/walletAuth";
 import { signatureRequest, signatureResponse } from "@/schemas";
 import { useApproveToken } from "@/hooks/useApproveToken";
 import { mutate } from "swr";
@@ -76,6 +82,7 @@ export const Swap = ({
   } = useWriteContract();
 
   const { isLoading: swapping } = useWaitForTransactionReceipt({ hash: data });
+  const { signTypedDataAsync } = useSignTypedData();
 
   const [icy, setIcy] = useState("");
   const [btc, setBtc] = useState("");
@@ -91,7 +98,7 @@ export const Swap = ({
     approve: _approve,
   } = useApproveToken(ICY_CONTRACT_ADDRESS, address, BigInt(icyToWei(icy)));
 
-  const swap = useCallback(() => {
+  const swap = useCallback(async () => {
     if (!isApproved) return;
     if (!isMainnetBtcAddress(btcAddress)) {
       return;
@@ -103,6 +110,31 @@ export const Swap = ({
       return;
     }
     setGeneratingSignature(true);
+
+    // Prove who is asking before asking. The user signs the amount and payout
+    // address with the wallet that will call swap(), so the backend can
+    // recover a real caller identity instead of trusting a key that ships in
+    // this bundle. Free (no gas, no transaction) but it is a wallet prompt, so
+    // it happens before the "Swapping..." toast to keep the order honest.
+    let walletSignature: string;
+    const walletDeadline = swapRequestDeadline();
+    try {
+      walletSignature = await signTypedDataAsync({
+        domain: SWAP_REQUEST_DOMAIN,
+        types: SWAP_REQUEST_TYPES,
+        primaryType: "SwapRequest",
+        message: {
+          icyAmount: BigInt(icyAmount),
+          btcAddress,
+          deadline: walletDeadline,
+        },
+      });
+    } catch (e) {
+      // Rejecting the prompt is a normal choice, not a failure to report loudly.
+      setGeneratingSignature(false);
+      return;
+    }
+
     toast("Swapping...", {
       position: "bottom-center",
     });
@@ -117,6 +149,8 @@ export const Swap = ({
           btc_address: btcAddress,
           icy_amount: icyAmount,
           btc_amount: btcAmount,
+          wallet_signature: walletSignature,
+          wallet_deadline: Number(walletDeadline),
         })
       ),
     })
@@ -175,7 +209,7 @@ export const Swap = ({
       .finally(() => {
         setGeneratingSignature(false);
       });
-  }, [icy, btc, btcAddress, isApproved, writeContractAsync, address]);
+  }, [icy, btc, btcAddress, isApproved, writeContractAsync, address, signTypedDataAsync]);
 
   const approve = () => {
     _approve?.();
