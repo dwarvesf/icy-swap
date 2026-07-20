@@ -20,6 +20,37 @@ export function formatRate(rate: number): string {
   return commify(Number.isInteger(rate) ? rate : rate.toFixed(2));
 }
 
+/**
+ * Group an EDITABLE field's digits. Unlike commify this only inserts
+ * separators: it keeps a trailing ".", leading zeros and trailing decimal
+ * zeros, every one of which is a legitimate half-typed state. Normalising
+ * those mid-keystroke fights the person typing.
+ */
+export function groupDigits(value: string): string {
+  const [whole, ...rest] = value.split(".");
+  const grouped = whole.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  return rest.length ? `${grouped}.${rest.join(".")}` : grouped;
+}
+
+export function stripGroups(value: string): string {
+  return value.replace(/,/g, "");
+}
+
+/**
+ * Where to put the caret so it stays next to the same digit after regrouping.
+ * Character offsets shift as separators appear and vanish; the digit index
+ * does not, so that is what gets pinned.
+ */
+export function caretAfterDigits(formatted: string, digits: number): number {
+  if (digits <= 0) return 0;
+  let seen = 0;
+  for (let i = 0; i < formatted.length; i++) {
+    if (formatted[i] !== ",") seen++;
+    if (seen === digits) return i + 1;
+  }
+  return formatted.length;
+}
+
 export function commify(value: string | number): string {
   const comps = String(value).split(".");
 
@@ -54,8 +85,14 @@ export function commify(value: string | number): string {
   if (comps.length === 2) {
     suffix = "." + (comps[1] || "0");
   }
-  while (suffix.length > 2 && suffix[suffix.length - 1] === "0") {
+  // Strip to length 1 (the bare "."), not 2. Stopping at 2 left an orphan
+  // zero on whole numbers, so a 45 ICY swap rendered "45.0" and the list
+  // looked like it was quoting one decimal of precision it does not have.
+  while (suffix.length > 1 && suffix[suffix.length - 1] === "0") {
     suffix = suffix.substring(0, suffix.length - 1);
+  }
+  if (suffix === ".") {
+    suffix = "";
   }
 
   const formatted = [];

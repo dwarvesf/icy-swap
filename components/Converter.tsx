@@ -6,7 +6,14 @@ import { address as contractAddress } from "../contract/icy";
 import { ICY_CONTRACT_ADDRESS } from "../envs";
 import { ArrowDownIcon } from "@heroicons/react/20/solid";
 import { isMainnetBtcAddress } from "@/lib/btc";
-import { cn, commify, formatRate } from "@/lib/utils";
+import {
+  caretAfterDigits,
+  cn,
+  commify,
+  formatRate,
+  groupDigits,
+  stripGroups,
+} from "@/lib/utils";
 
 const Field = ({
   label,
@@ -134,6 +141,30 @@ export const Converter = ({
   // Number() check admitted 0x10, 1e5 and Infinity.
   const numeric = (v: string) => /^\d*\.?\d*$/.test(v);
 
+  // The amount fields were the only figures on the page without separators,
+  // and they are the largest: 1793131 is unreadable where 1,793,131 is not.
+  // State stays raw; only the display is grouped. Rewriting a controlled
+  // input's value sends the caret to the end, which makes fixing a typo
+  // mid-number impossible, so it is put back beside the same digit.
+  const onAmount = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    apply: (raw: string) => void
+  ) => {
+    const el = e.target;
+    const raw = stripGroups(el.value);
+    if (!numeric(raw)) return;
+
+    const digitsLeftOfCaret = stripGroups(
+      el.value.slice(0, el.selectionStart ?? 0)
+    ).length;
+    apply(raw);
+
+    requestAnimationFrame(() => {
+      const pos = caretAfterDigits(el.value, digitsLeftOfCaret);
+      el.setSelectionRange(pos, pos);
+    });
+  };
+
   return (
     <div className="flex flex-col">
       <Field
@@ -163,12 +194,14 @@ export const Converter = ({
       >
         <div className="flex gap-2.5 items-center">
           <input
-            value={tokenA}
-            onChange={(e) => {
-              if (!rate || !numeric(e.target.value)) return;
-              setAmountTokenA(e.target.value);
-              setAmountTokenB(`${Math.floor(Number(e.target.value) * rate)}`);
-            }}
+            value={groupDigits(tokenA)}
+            onChange={(e) =>
+              onAmount(e, (raw) => {
+                if (!rate) return;
+                setAmountTokenA(raw);
+                setAmountTokenB(`${Math.floor(Number(raw) * rate)}`);
+              })
+            }
             type="text"
             inputMode="decimal"
             placeholder="0.00"
@@ -206,14 +239,18 @@ export const Converter = ({
       <Field label="Converts to">
         <div className="flex gap-2.5 items-center">
           <input
-            value={tokenB}
-            onChange={(e) => {
-              if (!rate || !numeric(e.target.value)) return;
-              setAmountTokenB(Math.floor(+e.target.value).toString());
-              setAmountTokenA(`${+(Number(e.target.value) / rate).toFixed(6)}`);
-            }}
+            value={groupDigits(tokenB)}
+            onChange={(e) =>
+              onAmount(e, (raw) => {
+                if (!rate) return;
+                setAmountTokenB(Math.floor(+raw).toString());
+                setAmountTokenA(`${+(Number(raw) / rate).toFixed(6)}`);
+              })
+            }
             type="text"
-            inputMode="decimal"
+            // A satoshi is indivisible, so this field takes whole numbers and
+            // asks phones for the keypad without a decimal key.
+            inputMode="numeric"
             placeholder="0"
             aria-label="Satoshi before fee"
             className={amountInput}
@@ -280,9 +317,12 @@ export const Converter = ({
         <div className="flex gap-3 justify-between items-baseline pt-2 text-[13.5px] border-t border-white/5">
           <dt className="min-w-0">
             You receive
+            {/* groupDigits, not commify: a swap this size runs to five figures,
+                and commify would trim "$12,276.00" to "$12,276". Token
+                quantities lose their trailing zeros, money keeps its cents. */}
             {usd ? (
               <span className="block text-[11px] text-ink-3">
-                about ${usd.toFixed(2)}
+                about ${groupDigits(usd.toFixed(2))}
               </span>
             ) : null}
           </dt>

@@ -1,4 +1,4 @@
-import { commify, formatRate } from "@/lib/utils";
+import { commify, formatRate, groupDigits } from "@/lib/utils";
 
 // ICY's rate is not a market quote nobody can check, it is a division anybody
 // can: reserve over circulating supply. The page used to state that in a
@@ -113,7 +113,9 @@ export const ReserveStrip = ({
           label="Rate"
           loading={loading}
           value={`${formatRate(rate)} sats`}
-          sub={`per ICY${usdPerIcy ? ` · $${usdPerIcy.toFixed(4)}` : ""}`}
+          sub={`per ICY${
+            usdPerIcy ? ` · $${groupDigits(usdPerIcy.toFixed(4))}` : ""
+          }`}
         />
       </dl>
       {/* Only the two qualifiers are left: the division above now says what
