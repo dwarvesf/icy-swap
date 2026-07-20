@@ -10,6 +10,16 @@ export const fetchKeys = {
   TXNS: "/transactions",
 };
 
+/**
+ * The rate carries fractional sats (1613.82), and the conversion uses it
+ * unrounded. Flooring it for display made the headline disagree with the
+ * amount field, so show what is actually applied.
+ */
+export function formatRate(rate: number): string {
+  if (!rate) return "0";
+  return commify(Number.isInteger(rate) ? rate : rate.toFixed(2));
+}
+
 export function commify(value: string | number): string {
   const comps = String(value).split(".");
 

@@ -25,6 +25,7 @@ export default function Home() {
   const circulating = info
     ? +info.circulated_icy_balance / Math.pow(10, 18)
     : 0;
+  const minIcy = Math.ceil(+(info?.min_icy_to_swap ?? 0) / Math.pow(10, 18));
 
   return (
     <div>
@@ -60,11 +61,18 @@ export default function Home() {
             </span>
           </div>
 
+          {/* The page's subject, named once for assistive tech. The visual
+              hierarchy is carried by the reserve strip below. */}
+          <h1 className="sr-only">
+            Swap ICY for Bitcoin at the reserve rate
+          </h1>
+
           <ReserveStrip
             rate={rate}
             satoshiBalance={info?.satoshi_balance ?? "0"}
             circulatingIcy={circulating}
             satoshiPerUsd={info?.satoshi_per_usd ?? 0}
+            minIcy={minIcy}
             loading={isLoading}
             error={Boolean(error)}
           />
@@ -73,19 +81,18 @@ export default function Home() {
             <div className="p-[18px] rounded-xl border border-white/10 bg-foreground-100">
               <Swap
                 rate={rate}
-                minIcy={Math.ceil(
-                  +(info?.min_icy_to_swap ?? 0) / Math.pow(10, 18)
-                )}
+                minIcy={minIcy}
                 feeRate={info?.service_fee_rate ?? 0}
                 minSats={info?.min_satoshi_fee ?? ""}
                 satoshiPerUsd={info?.satoshi_per_usd ?? 0}
+                loadingRate={isLoading}
               />
             </div>
 
             <Txns />
           </div>
 
-          <div className="flex flex-wrap gap-y-1.5 gap-x-[18px] items-center py-3 px-5 text-[12.5px] text-gray-500 border-t border-white/10">
+          <div className="flex flex-wrap gap-y-1.5 gap-x-[18px] items-center py-3 px-5 text-[12.5px] text-gray-400 border-t border-white/10">
             <span>The token of Dwarves Network</span>
             <a
               rel="noreferrer"
