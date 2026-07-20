@@ -1,91 +1,47 @@
 import { formatUnits } from "viem";
-import React, { useState } from "react";
-import cln from "classnames";
+import React from "react";
 import { useAccount, useBalance, useWatchAsset } from "wagmi";
 import Image from "next/image";
 import { address as contractAddress } from "../contract/icy";
 import { ICY_CONTRACT_ADDRESS } from "../envs";
 import { ArrowDownIcon } from "@heroicons/react/20/solid";
-import { QuestionMarkCircleIcon } from "@heroicons/react/24/solid";
-import { cn } from "@/lib/utils";
-import {
-  Modal,
-  ModalTrigger,
-  ModalPortal,
-  ModalOverlay,
-  ModalContent,
-  ModalTitle,
-  ModalDescription,
-  Button,
-  Tooltip,
-} from "@mochi-ui/core";
+import { validate as validateBtcAddr } from "bitcoin-address-validation";
+import { cn, commify } from "@/lib/utils";
 
-const Input = (props: {
+const Field = ({
+  label,
+  aside,
+  invalid,
+  children,
+}: {
   label: string;
-  disableQuickFill?: boolean;
-  token: { address?: `0x${string}`; icon: string; symbol: string };
-  value: string;
-  onChange: (v: string) => void;
-  onAddToken?: () => void;
-  feeRate?: number;
-}) => {
-  const { address } = useAccount();
-  const { data: balance } = useBalance({
-    token: props.token.address,
-    address,
-  });
-
-  const formatted = (+formatUnits(
-    balance?.value ?? BigInt(0),
-    balance?.decimals ?? 0
-  )).toFixed(2);
-
-  const symbol = balance?.symbol ? `$${balance.symbol}` : "";
-
-  return (
-    <div className="flex relative z-10 flex-col py-2 px-3 bg-gray-100 rounded shadow-md md:py-4 md:px-5">
-      <div className="flex justify-between">
-        <p className="text-xs font-medium text-gray-500">{props.label}</p>
-        {balance && props.token.address ? (
-          <button
-            disabled={props.disableQuickFill}
-            type="button"
-            onClick={() => props.onChange(formatted)}
-            className="text-xs text-gray-500"
-          >
-            Balance: {formatted} {symbol}
-          </button>
-        ) : null}
-      </div>
-      <div className="flex justify-between mt-4">
-        <input
-          value={props.value}
-          onChange={(e) =>
-            !Number.isNaN(Number(e.target.value)) &&
-            props.onChange(e.target.value)
-          }
-          type="text"
-          placeholder="0.00"
-          className="p-0 mr-5 min-w-0 text-2xl bg-transparent !ring-transparent !border-none !shadow-none outline-none focus:outline-none text-foreground"
-        />
-        <button
-          type="button"
-          onClick={props.onAddToken}
-          className="flex flex-shrink-0 items-center py-1 pr-2 pl-1 space-x-1.5 bg-white rounded-full border border-gray-200"
-        >
-          <Image
-            className="flex-shrink-0"
-            src={props.token.icon}
-            width={24}
-            height={24}
-            alt=""
-          />
-          <p className="font-medium text-gray-700">{props.token.symbol}</p>
-        </button>
-      </div>
+  aside?: React.ReactNode;
+  invalid?: boolean;
+  children: React.ReactNode;
+}) => (
+  <div
+    className={cn(
+      "rounded-[10px] border border-white/10 bg-white/[0.03] py-3 px-3.5",
+      { "border-brand/60": invalid }
+    )}
+  >
+    <div className="flex justify-between items-center mb-1.5 text-[11.5px] text-gray-500">
+      <span>{label}</span>
+      {aside}
     </div>
-  );
-};
+    {children}
+  </div>
+);
+
+const Token = ({ icon, symbol }: { icon: string; symbol: string }) => (
+  <span className="flex flex-shrink-0 gap-2 items-center py-1 pr-3 pl-1.5 text-[13.5px] font-medium rounded-full bg-white/[0.06]">
+    <Image className="flex-shrink-0 rounded-full" src={icon} width={20} height={20} alt="" />
+    {symbol}
+  </span>
+);
+
+const amountInput =
+  "w-full min-w-0 p-0 font-mono text-[26px] tabular-nums tracking-tight bg-transparent border-none !ring-transparent !shadow-none outline-none focus:outline-none text-white placeholder:text-gray-600";
 
 export const Converter = ({
   tokenA,
@@ -93,11 +49,11 @@ export const Converter = ({
   setAmountTokenA,
   setAmountTokenB,
   rate,
-  children,
   addressTokenB,
   setAddressTokenB,
   feeRate,
   minSats,
+  satoshiPerUsd,
 }: {
   tokenA: string;
   setAmountTokenA: (v: string) => void;
@@ -106,146 +62,166 @@ export const Converter = ({
   rate: number;
   addressTokenB: string;
   setAddressTokenB: (v: string) => void;
-  children?: React.ReactNode;
   feeRate: number;
   minSats: string;
+  satoshiPerUsd: number;
 }) => {
+  const { address } = useAccount();
   const { watchAsset } = useWatchAsset();
-  const requestWatch = async ({
-    address,
-    symbol,
-    decimals,
-  }: {
-    address: `0x${string}`;
-    symbol: string;
-    decimals: number;
-  }) => {
-    watchAsset({
-      type: "ERC20",
-      options: {
-        address,
-        symbol,
-        decimals,
-      },
-    });
-  };
-  const [modalFee, setModalFee] = useState(false);
+  const { data: balance } = useBalance({ token: contractAddress, address });
+
+  const formattedBalance = (+formatUnits(
+    balance?.value ?? BigInt(0),
+    balance?.decimals ?? 0
+  )).toFixed(2);
+
+  const subtotal = Math.floor(Number(tokenB) || 0);
+  // Service fee is a percentage with a floor, mirroring what the backend charges.
+  const serviceFee = subtotal
+    ? Math.max(Math.floor(subtotal * (feeRate ?? 0)), +minSats || 0)
+    : 0;
+  const receives = Math.max(0, subtotal - serviceFee);
+  const usd = satoshiPerUsd ? receives / satoshiPerUsd : 0;
+
+  const addressTouched = addressTokenB.trim().length > 0;
+  const addressInvalid = addressTouched && !validateBtcAddr(addressTokenB);
 
   return (
-    <div
-      className={cln("flex-col flex max-w-[280px]", {
-        "space-y-3": !Boolean(children),
-      })}
-    >
-      <Input
-        value={tokenA}
-        onChange={(v) => {
-          if (!rate) return;
-          setAmountTokenA(v);
-          setAmountTokenB(`${Math.floor(Number(v) * rate)}`);
-        }}
-        label="From"
-        token={{
-          icon: "/ICY.png",
-          symbol: "ICY",
-          address: contractAddress,
-        }}
-        onAddToken={() =>
-          requestWatch({
-            address: ICY_CONTRACT_ADDRESS,
-            symbol: "ICY",
-            decimals: 18,
-          })
+    <div className="flex flex-col">
+      <Field
+        label="You pay"
+        aside={
+          balance ? (
+            <span>
+              Balance {commify(formattedBalance)}
+              <button
+                type="button"
+                onClick={() => {
+                  if (!rate) return;
+                  setAmountTokenA(formattedBalance);
+                  setAmountTokenB(`${Math.floor(+formattedBalance * rate)}`);
+                }}
+                className="py-0.5 px-1.5 ml-2 text-[10.5px] font-medium tracking-wider text-gray-400 uppercase rounded border border-white/10 hover:border-icy-100 hover:text-icy-100"
+              >
+                Max
+              </button>
+            </span>
+          ) : null
         }
-      />
-      {children ? (
-        children
-      ) : (
-        <ArrowDownIcon width={20} height={20} className="mx-auto text-white" />
-      )}
-      <Input
-        value={tokenB}
-        onChange={(v) => {
-          if (!rate) return;
-          setAmountTokenB(Math.floor(+v).toString());
-          setAmountTokenA(`${Number(v) / rate}`);
-        }}
-        label="To"
-        token={{
-          icon: "/satoshi.png",
-          symbol: "SATS",
-        }}
-        feeRate={feeRate}
-      />
-      <div className="flex flex-col py-2 px-3 bg-white rounded md:py-4 md:px-5">
-        <div className="flex gap-x-1 items-center">
-          <span className="text-xs font-medium text-gray-500">
-            To BTC address
-          </span>
-          <Tooltip
-            className="relative z-20"
-            content={
-              <div className="max-w-xs font-normal text-white">
-                <p>
-                  Base and Bitcoin doesn&apos;t share the same wallet address
-                  format.
-                </p>
-                <p>
-                  So we can&apos;t assume sending addr == receiving addr, hence
-                  this field.
-                </p>
-              </div>
+      >
+        <div className="flex gap-2.5 items-center">
+          <input
+            value={tokenA}
+            onChange={(e) => {
+              if (!rate) return;
+              if (Number.isNaN(Number(e.target.value))) return;
+              setAmountTokenA(e.target.value);
+              setAmountTokenB(`${Math.floor(Number(e.target.value) * rate)}`);
+            }}
+            type="text"
+            inputMode="decimal"
+            placeholder="0.00"
+            aria-label="ICY amount to swap"
+            className={amountInput}
+          />
+          <button
+            type="button"
+            title="Add ICY to your wallet"
+            onClick={() =>
+              watchAsset({
+                type: "ERC20",
+                options: {
+                  address: ICY_CONTRACT_ADDRESS,
+                  symbol: "ICY",
+                  decimals: 18,
+                },
+              })
             }
           >
-            <QuestionMarkCircleIcon className="w-4 h-4 text-gray-500" />
-          </Tooltip>
+            <Token icon="/ICY.png" symbol="ICY" />
+          </button>
         </div>
-        <input
-          value={addressTokenB}
-          onChange={(e) => setAddressTokenB(e.target.value)}
-          className="text-2xl mt-4 p-0 w-full bg-transparent border-none !ring-transparent focus:ring-transparent outline-none focus:outline-none text-foreground"
-        />
+      </Field>
+
+      <div className="flex relative z-10 -my-3.5 justify-center">
+        <span className="grid place-items-center w-7 h-7 text-gray-400 rounded-full border bg-foreground-100 border-white/10">
+          <ArrowDownIcon width={14} height={14} />
+        </span>
       </div>
 
-      <Modal modal={modalFee}>
-        <ModalTrigger asChild>
-          <button
-            onClick={() => setModalFee(true)}
-            type="button"
-            className={cn(
-              "self-start mt-1 text-gray-500 flex text-xs font-medium hover:underline hover:cursor-pointer"
-            )}
-          >
-            {(feeRate ?? 0) * 100}% Service Fee, min {minSats} SATS
-          </button>
-        </ModalTrigger>
-        <ModalPortal>
-          <ModalOverlay />
-          <ModalContent className="!p-5 max-w-sm overflow-hidden">
-            <div className="flex relative flex-col">
-              <ModalTitle className="relative">About service fee</ModalTitle>
-              <ModalDescription className="flex relative flex-col gap-y-2 mt-5">
-                <span className="font-medium">
-                  You&apos;re sending fund to a Bitcoin wallet
-                </span>
-                <span>
-                  Exchange to Bitcoin addresses can only be done through
-                  on-chain transfer, which will be sent on blockchain, which
-                  network fees charged.
-                </span>
-              </ModalDescription>
-              <ModalTrigger asChild className="relative">
-                <Button
-                  className="mt-3 w-full"
-                  onClick={() => setModalFee(false)}
-                >
-                  OK
-                </Button>
-              </ModalTrigger>
-            </div>
-          </ModalContent>
-        </ModalPortal>
-      </Modal>
+      <Field label="You receive" aside={usd ? <span>≈ ${usd.toFixed(2)}</span> : null}>
+        <div className="flex gap-2.5 items-center">
+          <input
+            value={tokenB}
+            onChange={(e) => {
+              if (!rate) return;
+              if (Number.isNaN(Number(e.target.value))) return;
+              setAmountTokenB(Math.floor(+e.target.value).toString());
+              setAmountTokenA(`${Number(e.target.value) / rate}`);
+            }}
+            type="text"
+            inputMode="decimal"
+            placeholder="0"
+            aria-label="Satoshi to receive"
+            className={amountInput}
+          />
+          <Token icon="/satoshi.png" symbol="sats" />
+        </div>
+      </Field>
+
+      <div className="mt-2">
+        <Field
+          label="Bitcoin address"
+          invalid={addressInvalid}
+          aside={
+            <span className="hidden sm:inline">
+              Base and Bitcoin use different address formats
+            </span>
+          }
+        >
+          <input
+            value={addressTokenB}
+            onChange={(e) => setAddressTokenB(e.target.value)}
+            spellCheck={false}
+            placeholder="bc1..."
+            aria-label="Destination Bitcoin address"
+            aria-invalid={addressInvalid}
+            className="p-0 w-full font-mono text-[13px] bg-transparent border-none !ring-transparent !shadow-none outline-none focus:outline-none text-white placeholder:text-gray-600"
+          />
+        </Field>
+        {addressInvalid ? (
+          <p className="mt-1.5 text-xs text-brand">
+            Not a valid Bitcoin address. Check for a missing or extra character.
+          </p>
+        ) : null}
+      </div>
+
+      {/* Fees used to sit behind a modal. People moving Bitcoin want the
+          arithmetic before they commit, not one interaction away. */}
+      <dl className="grid gap-1.5 pt-3 mt-3.5 border-t border-white/5">
+        <div className="flex justify-between text-[12.5px] text-gray-400">
+          <dt>Rate</dt>
+          <dd className="font-mono tabular-nums text-white">
+            1 ICY = {commify(Math.floor(rate))} sats
+          </dd>
+        </div>
+        <div className="flex justify-between text-[12.5px] text-gray-400">
+          <dt>Service fee ({(feeRate ?? 0) * 100}%, min {commify(minSats || 0)} sats)</dt>
+          <dd className="font-mono tabular-nums text-white">
+            {serviceFee ? `−${commify(serviceFee)}` : "0"} sats
+          </dd>
+        </div>
+        <div className="flex justify-between pt-2 text-[13.5px] border-t border-white/5">
+          <dt>You receive</dt>
+          <dd className="font-mono tabular-nums text-icy-200">
+            {commify(receives)} sats
+          </dd>
+        </div>
+      </dl>
+      <p className="mt-2 text-[11.5px] text-gray-500">
+        The Bitcoin network fee is deducted when the transaction is broadcast,
+        so the amount that lands can be slightly lower.
+      </p>
     </div>
   );
 };

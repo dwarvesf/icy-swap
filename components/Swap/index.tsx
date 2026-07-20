@@ -23,7 +23,7 @@ import { signatureRequest, signatureResponse } from "@/schemas";
 import { useApproveToken } from "@/hooks/useApproveToken";
 import { maxUint256 } from "viem";
 import { mutate } from "swr";
-import { fetchKeys } from "@/lib/utils";
+import { commify, fetchKeys } from "@/lib/utils";
 
 const getContractConfig = (
   icy: BigInt,
@@ -44,11 +44,13 @@ export const Swap = ({
   minIcy,
   feeRate,
   minSats,
+  satoshiPerUsd,
 }: {
   rate: number;
   minIcy: number;
   feeRate: number;
   minSats: string;
+  satoshiPerUsd: number;
 }) => {
   const queryClient = useQueryClient();
   const { data: blockNumber } = useBlockNumber({ watch: true });
@@ -157,52 +159,64 @@ export const Swap = ({
     confirmingApprove ||
     approving;
 
+  const addressValid = validateBtcAddr(btcAddress);
+  const amountTooSmall = Boolean(icy) && +icy < minIcy;
+  const ready =
+    Boolean(rate) && Boolean(address) && +icy >= minIcy && addressValid;
+
+  // A control says what it does. Anything the user still has to fix is stated
+  // next to the field that caused it, not written over the button label.
+  const label = () => {
+    if (!rate) return "Rate unavailable";
+    if (!address) return "Connect a wallet to swap";
+    if (!icy || +icy <= 0) return "Enter an amount";
+    if (!isApproved) return "Approve ICY";
+    return `Swap ${commify(icy)} ICY for Bitcoin`;
+  };
+
   return (
-    <div className="flex flex-col justify-center items-center">
-      <div>
-        <Converter
-          tokenA={icy}
-          setAmountTokenA={setIcy}
-          tokenB={btc}
-          setAmountTokenB={setBtc}
-          addressTokenB={btcAddress}
-          setAddressTokenB={setBtcAddress}
-          rate={rate}
-          feeRate={feeRate}
-          minSats={minSats}
-        />
-      </div>
+    <div className="flex flex-col">
+      <Converter
+        tokenA={icy}
+        setAmountTokenA={setIcy}
+        tokenB={btc}
+        setAmountTokenB={setBtc}
+        addressTokenB={btcAddress}
+        setAddressTokenB={setBtcAddress}
+        rate={rate}
+        feeRate={feeRate}
+        minSats={minSats}
+        satoshiPerUsd={satoshiPerUsd}
+      />
+
+      {amountTooSmall ? (
+        <p className="mt-3 text-xs text-brand">
+          The smallest swap is {commify(minIcy)} ICY. Below that the Bitcoin
+          network fee would eat the transfer.
+        </p>
+      ) : null}
+      {!rate ? (
+        <p className="mt-3 text-xs text-brand">
+          We could not reach the rate service, so swapping is paused. Refresh in
+          a moment.
+        </p>
+      ) : null}
+
       <button
         type="button"
-        className={cln("w-max mt-10 text-white px-5 py-2.5 rounded-sm", {
-          "bg-gray-400":
-            +icy < minIcy || !btcAddress || !validateBtcAddr(btcAddress),
-          "bg-brand":
-            +icy >= minIcy && btcAddress && validateBtcAddr(btcAddress),
-        })}
-        disabled={loading || +icy < minIcy || !validateBtcAddr(btcAddress)}
+        className={cln(
+          "mt-4 w-full rounded-[10px] py-3 text-[14.5px] font-semibold transition-colors",
+          {
+            "bg-white/[0.07] text-gray-500 cursor-not-allowed":
+              !ready || loading,
+            "bg-brand text-white hover:bg-brand-600": ready && !loading,
+          }
+        )}
+        disabled={loading || !ready}
         onClick={!isApproved ? approve : swap}
       >
-        {loading ? (
-          <Spinner className="w-5 h-5" />
-        ) : !validateBtcAddr(btcAddress) ? (
-          "Invalid BTC address"
-        ) : +icy < minIcy ? (
-          `Min swap amount: ${minIcy} $ICY`
-        ) : !isApproved ? (
-          "Approve"
-        ) : !rate ? (
-          "Cannot fetch rate"
-        ) : (
-          "Swap"
-        )}
+        {loading ? <Spinner className="mx-auto w-5 h-5" /> : label()}
       </button>
-
-      {/* {isOutOfMoneyError ? ( */}
-      {/*   <p className="mt-2 font-medium text-red-400"> */}
-      {/*     Error: contract out of money */}
-      {/*   </p> */}
-      {/* ) : null} */}
     </div>
   );
 };
