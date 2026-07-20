@@ -284,8 +284,12 @@ export const Swap = ({
         <button
           type="button"
           className={cn(cta, {
-            "bg-white/[0.07] text-ink-3 cursor-not-allowed":
-              !ready || loading,
+            // ink-2, not ink-3: this button's disabled label is not decorative,
+            // it carries the only instruction on screen ("Enter an amount",
+            // "Approve ICY", "Rate unavailable"). At ink-3 it measured 2.84:1
+            // against this fill, so the one thing telling you what to do next
+            // was the least readable text on the page. ink-2 is 5.75:1.
+            "bg-white/[0.07] text-ink-2 cursor-not-allowed": !ready || loading,
             "bg-brand text-white hover:bg-brand-600": ready && !loading,
           })}
           disabled={loading || !ready}
